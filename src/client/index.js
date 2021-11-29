@@ -6,6 +6,9 @@ class Scene extends Phaser.Scene {
         this.graphics;
         this.mouseFollow
         this.stick
+        this.isPointerDown = false
+        this.POWER_INCREMENT = 0.1
+        this.POWER_MAXIMUM = 10
     }
 
     preload ()
@@ -26,10 +29,12 @@ class Scene extends Phaser.Scene {
     this.mouseFollow = new Phaser.Geom.Circle(0, 0, 25)
     this.objects.camera = this.cameras.add(0, 0, 800, 600);
     this.input.on('pointermove', pointer => {
-        this.mouseFollow.x = pointer.x
-        this.mouseFollow.y = pointer.y
-        this.stick.x = pointer.x
-        this.stick.y = pointer.y
+        if(!this.isPointerDown) {
+            this.mouseFollow.x = pointer.x
+            this.mouseFollow.y = pointer.y
+            this.stick.x = pointer.x
+            this.stick.y = pointer.y
+        }
     })
     this.input.on('wheel', (_a, _b, _c, delta) => {
         if(delta > 0) {
@@ -37,6 +42,16 @@ class Scene extends Phaser.Scene {
         } else if (delta < 0) {
             this.stick.angle -= 5
         }
+    })
+
+    this.input.on('pointerdown', () => {
+        console.log('INPUT DOWN')
+        this.isPointerDown = true
+    })
+
+    this.input.on('pointerup', () => {
+        console.log('INPUT UP')
+        this.isPointerDown = false
     })
 }
 

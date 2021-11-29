@@ -37,9 +37,9 @@ class Scene extends Phaser.Scene {
         this.mouseFollow.x = pointer.x
         this.mouseFollow.y = pointer.y
         const point =  Phaser.Math.RotateAroundDistance({x: this.whiteball.x, y: this.whiteball.y}, this.stick.x, this.stick.y, this.stick.angle, 50)
-        this.stick.x = pointer.x
-        this.stick.y = pointer.y
-        const angleBetween = Phaser.Math.Angle.Between(this.whiteball.x, this.whiteball.y, this.stick.x, this.stick.y)
+        this.stick.x = this.whiteball.x
+        this.stick.y = this.whiteball.y
+        const angleBetween = Phaser.Math.Angle.Between(this.whiteball.x, this.whiteball.y, pointer.x, pointer.y)
         console.log({angleBetween, inGed: Phaser.Math.Angle.WrapDegrees(angleBetween)})
         this.stick.angle = Phaser.Math.RadToDeg(angleBetween + Math.PI / 2)
       }

@@ -31,6 +31,13 @@ class Scene extends Phaser.Scene {
         this.stick.x = pointer.x
         this.stick.y = pointer.y
     })
+    this.input.on('wheel', (_a, _b, _c, delta) => {
+        if(delta > 0) {
+            this.stick.angle += 5
+        } else if (delta < 0) {
+            this.stick.angle -= 5
+        }
+    })
 }
 
 update() {

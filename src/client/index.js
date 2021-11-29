@@ -9,6 +9,7 @@ class Scene extends Phaser.Scene {
         this.isPointerDown = false
         this.POWER_INCREMENT = 0.1
         this.POWER_MAXIMUM = 10
+        this.CURRENT_POWER = 0
     }
 
     preload ()
@@ -49,14 +50,22 @@ class Scene extends Phaser.Scene {
         this.isPointerDown = true
     })
 
-    this.input.on('pointerup', () => {
+    this.input.on('pointerup', (pointer) => {
         console.log('INPUT UP')
         this.isPointerDown = false
+        this.CURRENT_POWER = 0
+        this.stick.x = pointer.x
+        this.stick.y = pointer.y
     })
 }
 
 update() {
     this.graphics.clear();
+    if(this.isPointerDown && this.CURRENT_POWER <= this.POWER_MAXIMUM) {
+        this.CURRENT_POWER += this.POWER_INCREMENT
+        this.stick.x += this.POWER_INCREMENT * 3
+        this.stick.y += this.POWER_INCREMENT * 3
+    }
 
     this.graphics.lineStyle(1, 0x5391c9, 1);
 

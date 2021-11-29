@@ -25,16 +25,23 @@ class Scene extends Phaser.Scene {
 {
     this.graphics = this.add.graphics();
     const table = this.physics.add.staticImage(1253/2, 652/2, 'table').refreshBody()
-    const whiteball = this.physics.add.sprite(400, 300, 'whiteball');    
-    this.stick = this.physics.add.sprite(100, 100, 'stick');    
+    this.whiteball = this.physics.add.sprite(400, 300, 'whiteball');    
+    this.stick = this.physics.add.sprite(100, 100, 'stick');
+    this.stick.setOrigin(0, 0)
+    this.stick.setRotation(Math.PI / 2)
+    window.stick = this.stick
     this.mouseFollow = new Phaser.Geom.Circle(0, 0, 25)
     this.objects.camera = this.cameras.add(0, 0, 800, 600);
     this.input.on('pointermove', pointer => {
         if(!this.isPointerDown) {
             this.mouseFollow.x = pointer.x
             this.mouseFollow.y = pointer.y
+            const point =  Phaser.Math.RotateAroundDistance({x: this.whiteball.x, y: this.whiteball.y}, this.stick.x, this.stick.y, this.stick.angle, 50)
             this.stick.x = pointer.x
             this.stick.y = pointer.y
+            const angleBetween = Phaser.Math.Angle.Between(this.whiteball.x, this.whiteball.y, this.stick.x, this.stick.y)
+            console.log({angleBetween, inGed: Phaser.Math.Angle.WrapDegrees(angleBetween)})
+            this.stick.angle = Phaser.Math.RadToDeg(angleBetween + Math.PI / 2)
         }
     })
     this.input.on('wheel', (_a, _b, _c, delta) => {

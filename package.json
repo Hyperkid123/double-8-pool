@@ -7,6 +7,7 @@
   "license": "MIT",
   "dependencies": {
     "colyseus.js": "^0.14.13",
+    "express": "^4.17.1",
     "phaser": "3.55.2"
   },
   "devDependencies": {
@@ -19,6 +20,7 @@
   },
   "scripts": {
     "build": "webpack --mode development",
+    "dev": "node src/server/index.js",
     "compile:client": "babel src/client --out-dir dist/client"
   }
 }

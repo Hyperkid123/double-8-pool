@@ -2,29 +2,19 @@ import * as Phaser from 'phaser';
 
 function preload ()
 {
-    this.load.setBaseURL('http://localhost')
-
+    this.load.setBaseURL('/')
+    this.objects = {};
+    this.load.image('black-ball', 'assets/black-ball.png')
 }
 
 function create ()
 {
-    this.add.image(400, 300, 'sky');
-
-    var particles = this.add.particles('red');
-
-    var emitter = particles.createEmitter({
-        speed: 100,
-        scale: { start: 1, end: 0 },
-        blendMode: 'ADD'
-    });
-
-    var logo = this.physics.add.image(400, 100, 'logo');
-
-    logo.setVelocity(100, 200);
-    logo.setBounce(1, 1);
-    logo.setCollideWorldBounds(true);
-
-    emitter.startFollow(logo);
+    const blackBall = this.physics.add.image(400, 300, 'black-ball');
+    this.objects.camera = this.cameras.add(0, 0, 800, 600);
+    blackBall.setVelocity(100, 200);
+    blackBall.setBounce(1, 1);
+    blackBall.setCollideWorldBounds(true);
+    this.objects.camera.setBackgroundColor('rgba(255, 0, 0, 0.5)');
 }
 
 function update() {

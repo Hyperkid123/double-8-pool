@@ -40,7 +40,7 @@ class Scene extends Phaser.Scene {
         this.stick.x = this.whiteball.x
         this.stick.y = this.whiteball.y
         const angleBetween = Phaser.Math.Angle.Between(this.whiteball.x, this.whiteball.y, pointer.x, pointer.y)
-        console.log({angleBetween, inGed: Phaser.Math.Angle.WrapDegrees(angleBetween)})
+        //console.log({angleBetween, inGed: Phaser.Math.Angle.WrapDegrees(angleBetween)})
         this.stick.angle = Phaser.Math.RadToDeg(angleBetween + Math.PI / 2)
       }
     })
@@ -61,8 +61,10 @@ class Scene extends Phaser.Scene {
       console.log('INPUT UP')
       this.isPointerDown = false
       this.CURRENT_POWER = 0
-      this.stick.x = pointer.x
-      this.stick.y = pointer.y
+      //this.stick.x = pointer.x
+      //this.stick.y = pointer.y
+
+      this.stick.setOrigin(0,0)
     })
   }
 
@@ -70,8 +72,9 @@ class Scene extends Phaser.Scene {
     this.graphics.clear();
     if(this.isPointerDown && this.CURRENT_POWER <= this.POWER_MAXIMUM) {
       this.CURRENT_POWER += this.POWER_INCREMENT
-      this.stick.x += this.POWER_INCREMENT * 3
-      this.stick.y += this.POWER_INCREMENT * 3
+
+      console.log(this.CURRENT_POWER)
+      this.stick.setOrigin(0, - Math.min(this.CURRENT_POWER / 100, 0.1))
     }
 
     this.graphics.lineStyle(1, 0x5391c9, 1);

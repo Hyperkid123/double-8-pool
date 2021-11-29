@@ -1,11 +1,11 @@
 import * as Phaser from 'phaser';
 
-let graphics;
-let mouseFollow;
-
 class Scene extends Phaser.Scene {
     constructor() {
         super()
+        this.graphics;
+        this.mouseFollow
+        this.stick
     }
 
     preload ()
@@ -19,30 +19,26 @@ class Scene extends Phaser.Scene {
 
     create ()
 {
-    graphics = this.add.graphics();
+    this.graphics = this.add.graphics();
     const table = this.physics.add.staticImage(1253/2, 652/2, 'table').refreshBody()
     const whiteball = this.physics.add.sprite(400, 300, 'whiteball');    
-    const stick = this.physics.add.sprite(100, 100, 'stick');    
-    mouseFollow = new Phaser.Geom.Circle(0, 0, 25)
+    this.stick = this.physics.add.sprite(100, 100, 'stick');    
+    this.mouseFollow = new Phaser.Geom.Circle(0, 0, 25)
     this.objects.camera = this.cameras.add(0, 0, 800, 600);
-    // blackBall.setVelocity(100, 200);
-    // blackBall.setBounce(1, 1);
-    // blackBall.setCollideWorldBounds(true);
-    // this.objects.camera.setBackgroundColor('rgba(255, 0, 0, 0.5)');
     this.input.on('pointermove', pointer => {
-        mouseFollow.x = pointer.x
-        mouseFollow.y = pointer.y
-        this.children.bringToTop(mouseFollow)
-        console.log(this.children)
+        this.mouseFollow.x = pointer.x
+        this.mouseFollow.y = pointer.y
+        this.stick.x = pointer.x
+        this.stick.y = pointer.y
     })
 }
 
 update() {
-    graphics.clear();
+    this.graphics.clear();
 
-    graphics.lineStyle(1, 0x5391c9, 1);
+    this.graphics.lineStyle(1, 0x5391c9, 1);
 
-    graphics.strokeCircleShape(mouseFollow);    
+    this.graphics.strokeCircleShape(this.mouseFollow);    
     }
 }
 

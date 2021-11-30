@@ -10,6 +10,7 @@ class Scene extends Phaser.Scene {
     this.POWER_INCREMENT = 0.4;
     this.POWER_MAXIMUM = 25;
     this.CURRENT_POWER = 0;
+    this.roundInProgress = false;
   }
 
   preload ()
@@ -138,24 +139,25 @@ class Scene extends Phaser.Scene {
     });
 
     this.input.on('pointerdown', () => {
-      //console.log('INPUT DOWN');
-      this.isPointerDown = true;
+      if(!this.roundInProgress) {
+        this.isPointerDown = true;
+      }
     });
 
     this.input.on('pointerup', (pointer) => {
-      //console.log('INPUT UP');
-      this.isPointerDown = false;
-      //this.stick.x = pointer.x
-      //this.stick.y = pointer.y
+      if(!this.roundInProgress) {
+        this.isPointerDown = false;
+        this.roundInProgress = true;
 
-      this.stick.setOrigin(0.5,-0.065);
+        this.stick.setOrigin(0.5,-0.065);
 
-      console.log(`[${pointer.x},${pointer.y}]`);
+        console.log(`[${pointer.x},${pointer.y}]`);
 
-      const newVel = this.physics.velocityFromAngle(this.stick.angle - 90, this.CURRENT_POWER * 55);
-      this.whiteball.setVelocity(newVel.x,newVel.y);
+        const newVel = this.physics.velocityFromAngle(this.stick.angle - 90, this.CURRENT_POWER * 55);
+        this.whiteball.setVelocity(newVel.x,newVel.y);
 
-      this.CURRENT_POWER = 0;
+        this.CURRENT_POWER = 0;
+      }
     });
   }
 
@@ -168,6 +170,23 @@ class Scene extends Phaser.Scene {
       ball.setVelocity(0, 0);
       console.log(ball, number);
     }
+  }
+
+  manageWhiteBallVelocity() {
+    const { x, y } = this.whiteball.body.velocity;
+    /**
+     * To speed up slowdown of the white ball
+     */
+    if(x !== 0 && y !== 0 && Math.abs(x) <= 0.35 && Math.abs(y) <= 0.35) {
+      this.whiteball.setDrag(0.1);
+    } else if(x === 0 && y === 0) {
+      /**
+       * end turn and reset drag
+       */
+      this.whiteball.setDrag(0.75);
+      this.roundInProgress = false;
+    }
+
   }
 
   update() {
@@ -183,6 +202,13 @@ class Scene extends Phaser.Scene {
     this.graphics.lineStyle(1, 0x5391c9, 1);
 
     this.graphics.strokeCircleShape(this.mouseFollow);
+    if(this.roundInProgress) {
+      this.stick.setAlpha(0);
+      this.manageWhiteBallVelocity();
+    } else {
+      this.stick.setAlpha(1);
+    }
+
   }
 }
 

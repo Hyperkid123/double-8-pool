@@ -8,7 +8,7 @@ class Scene extends Phaser.Scene {
     this.stick;
     this.isPointerDown = false;
     this.POWER_INCREMENT = 0.4;
-    this.POWER_MAXIMUM = 15;
+    this.POWER_MAXIMUM = 25;
     this.CURRENT_POWER = 0;
   }
 
@@ -35,10 +35,11 @@ class Scene extends Phaser.Scene {
 
     this.whiteball = this.physics.add.sprite(400, 300, 'whiteball');
     this.whiteball.setScale(0.6);
-    this.whiteball.setDrag(10, 10);
-    this.whiteball.setBounce(1,1);
+    this.whiteball.setDrag(0.75);
+    this.whiteball.setBounce(0.8,0.8);
     this.whiteball.setCollideWorldBounds(true);
     this.whiteball.setCircle(35);
+    this.whiteball.setDamping(true);
 
     this.input.enableDebug(this.whiteball, 0xff00ff);
     this.whiteball.setDebug(true, true, 0xff00ff);
@@ -69,7 +70,7 @@ class Scene extends Phaser.Scene {
       [955,369, 5],
       [955,414, 15],
     ].map(([x, y, index]) =>
-      this.physics.add.sprite(x, y, `${index}ball`).setScale(0.6).setBounce(1, 1).setDrag(10, 10).setCircle(35)
+      this.physics.add.sprite(x, y, `${index}ball`).setScale(0.6).setBounce(0.8, 0.8).setDrag(0.75).setCircle(35).setDamping(true)
     );
     balls.push(this.whiteball);
 
@@ -152,7 +153,7 @@ class Scene extends Phaser.Scene {
 
       console.log(`[${pointer.x},${pointer.y}]`);
 
-      const newVel = this.physics.velocityFromAngle(this.stick.angle - 90, this.CURRENT_POWER * 15);
+      const newVel = this.physics.velocityFromAngle(this.stick.angle - 90, this.CURRENT_POWER * 55);
       this.whiteball.setVelocity(newVel.x,newVel.y);
 
       this.CURRENT_POWER = 0;
@@ -166,7 +167,7 @@ class Scene extends Phaser.Scene {
       this.CURRENT_POWER += this.POWER_INCREMENT;
 
       // console.log(this.CURRENT_POWER);
-      this.stick.setOrigin(0.5, -0.065 - Math.min(this.CURRENT_POWER / 100, 0.1));
+      this.stick.setOrigin(0.5, -0.025 - Math.min(this.CURRENT_POWER / 100, 0.1));
     }
 
     this.graphics.lineStyle(1, 0x5391c9, 1);

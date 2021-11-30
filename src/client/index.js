@@ -43,6 +43,30 @@ class Scene extends Phaser.Scene {
       this.physics.add.sprite(x, y, 'whiteball').setScale(0.1, 0.1).setCircle(30).setAlpha(0)
     );
 
+    const balls = [
+      [800,321],
+
+      [837,295],
+      [837,347],
+
+      [877,273],
+      [876,321],
+      [877,368],
+
+      [915,249],
+      [915,299],
+      [915,344],
+      [916,389],
+
+      [955,230],
+      [955,279],
+      [955,324],
+      [955,369],
+      [955,414],
+    ].map(([x, y]) =>
+      this.physics.add.sprite(x, y, 'whiteball').setScale(0.6).setBounce(1, 1).setDrag(10, 10).setCircle(35)
+    );
+
     const boxes = [
       // hlavní stěny
       this.physics.add.sprite(65, 120, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 420),

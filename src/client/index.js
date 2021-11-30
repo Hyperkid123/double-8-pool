@@ -1,6 +1,13 @@
 import * as Phaser from 'phaser';
 import { setElementProperty } from './dom-elements';
 
+const BALL_TYPES = {
+  STRIPPES: 'STRIPES',
+  FULL: 'FULL'
+};
+
+const getBallType = (number) => number < 10 ? BALL_TYPES.STRIPPES : BALL_TYPES.FULL;
+
 class Scene extends Phaser.Scene {
   constructor() {
     super();
@@ -13,6 +20,10 @@ class Scene extends Phaser.Scene {
     this.CURRENT_POWER = 0;
     this.roundInProgress = false;
     this.whiteballFaul = false;
+    this.fullRemaining = 7;
+    this.stripedRemaining = 7;
+    this.currentBallType = undefined;
+    this.ballTypeFaul = false;
   }
 
   preload ()
@@ -132,7 +143,7 @@ class Scene extends Phaser.Scene {
         this.stick.angle = Phaser.Math.RadToDeg(angleBetween + Math.PI / 2);
       }
 
-      if(this.whiteballFaul) {
+      if(this.whiteballFaul || this.ballTypeFaul) {
         this.whiteball.setPosition(pointer.x, pointer.y);
       }
     });
@@ -145,13 +156,17 @@ class Scene extends Phaser.Scene {
     });
 
     this.input.on('pointerdown', () => {
-      if(!this.roundInProgress && !this.whiteballFaul) {
+      if(!this.roundInProgress && !this.whiteballFaul && !this.ballTypeFaul) {
         this.isPointerDown = true;
       }
-      if(this.whiteballFaul) {
+      if(this.whiteballFaul || this.ballTypeFaul) {
         this.whiteballFaul = false;
+        this.ballTypeFaul = false;
         setElementProperty('place-ball', 'hidden', true);
         this.whiteball.body.enable = true;
+        if(typeof this.currentBallType !== 'undefined') {
+          this.currentBallType = this.currentBallType === BALL_TYPES.STRIPPES ? BALL_TYPES.FULL : BALL_TYPES.STRIPPES;
+        }
       }
     });
 
@@ -172,15 +187,52 @@ class Scene extends Phaser.Scene {
     });
   }
 
+  checkWinCondition() {
+    /**
+     * Nechal sem to rozdelene at se ty podminky lepe ctou
+     */
+    if(this.currentBallType === BALL_TYPES.FULL && this.fullRemaining !== 0) {
+      console.log('CURRENT PLAYER LOST');
+    } else if (this.currentBallType === BALL_TYPES.STRIPPES && this.stripedRemaining !== 0) {
+      console.log('CURRENT PLAYER LOST');
+    } else if(this.currentBallType === BALL_TYPES.FULL && this.fullRemaining === 0) {
+      console.log('CURRENT PLAYER WON');
+    } else if(this.currentBallType === BALL_TYPES.STRIPPES && this.stripedRemaining === 0) {
+      console.log('CURRENT PLAYER WON');
+    }
+  }
+
   ballInHole(ball, hole) {
     if(ball.name !== 'white') {
       const number = Number(ball.name.split('-').shift());
+      if(number === 8) {
+        if(typeof this.currentBallType!== 'undefined') {
+          this.checkWinCondition();
+        }
+      }
+      const ballType = getBallType(number);
+      console.log({
+        ct: this.currentBallType,
+        ballType,
+        cond: typeof this.currentBallType !== 'undefined' && ballType !== this.currentBallType,
+        faul: this.ballTypeFaul
+      });
+      if(typeof this.currentBallType !== 'undefined' && ballType !== this.currentBallType) {
+        this.ballTypeFaul = true;
+        setElementProperty('place-ball', 'hidden', undefined);
+        this.whiteball.setVelocity(0, 0);
+        this.whiteball.body.enable = false;
+      }
+
+      this.currentBallType = ballType;
 
       ball.x = 1400;
-      if(number > 10) {
+      if(ballType === BALL_TYPES.STRIPPES) {
         ball.y = 500;
+        this.stripedRemaining -= 1;
       } else {
         ball.y = 150;
+        this.fullRemaining -= 1;
       }
       ball.setVelocity(0, 0);
       console.log(ball, number);

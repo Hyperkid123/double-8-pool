@@ -252,12 +252,7 @@ class Scene extends Phaser.Scene {
      * To speed up slowdown of the white ball
      */
     if(x !== 0 && y !== 0 && Math.abs(x) <= 0.35 && Math.abs(y) <= 0.35) {
-      this.whiteball.setDrag(0.1);
-    } else if(x === 0 && y === 0) {
-      /**
-       * end turn and reset drag
-       */
-      this.whiteball.setDrag(0.75);
+      this.whiteball.setVelocity(0, 0);
       this.roundInProgress = false;
     }
 

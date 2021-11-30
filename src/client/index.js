@@ -109,7 +109,7 @@ class Scene extends Phaser.Scene {
 
     this.physics.add.collider(boxes, balls);
     this.physics.add.collider(balls, balls);
-    this.physics.add.overlap(balls, holes, () => console.log('KOULE V DIRE'), null, this);
+    this.physics.add.overlap(balls, holes, (...args) => console.log('KOULE V DIRE', ...args), null, this);
 
     this.stick = this.physics.add.sprite(100, 100, 'stick');
     this.stick.setOrigin(0.5, -0.065);

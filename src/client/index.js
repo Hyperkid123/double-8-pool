@@ -20,6 +20,11 @@ class Scene extends Phaser.Scene {
     this.load.image('table', 'assets/table.png');
     this.load.spritesheet('stick', 'assets/stick.png', {frameWidth: 11, frameHeight: 455});
     this.load.spritesheet('rectangle', 'assets/rectangle.png', {frameWidth: 1, frameHeight: 1});
+
+
+    [...new Array(15)].forEach((_, index) => {
+      this.load.spritesheet(`${index + 1}ball`, `assets/${index + 1}.png`, {frameWidth: 69, frameHeight: 68});
+    });
   }
 
   create ()
@@ -44,27 +49,27 @@ class Scene extends Phaser.Scene {
     );
 
     const balls = [
-      [800,321],
+      [800,321, 1],
 
-      [837,295],
-      [837,347],
+      [837,295, 13],
+      [837,347, 10],
 
-      [877,273],
-      [876,321],
-      [877,368],
+      [877,273, 6],
+      [876,321, 8],
+      [877,368, 3],
 
-      [915,249],
-      [915,299],
-      [915,344],
-      [916,389],
+      [915,249, 9],
+      [915,299, 2],
+      [915,344, 4],
+      [916,389, 14],
 
-      [955,230],
-      [955,279],
-      [955,324],
-      [955,369],
-      [955,414],
-    ].map(([x, y]) =>
-      this.physics.add.sprite(x, y, 'whiteball').setScale(0.6).setBounce(1, 1).setDrag(10, 10).setCircle(35)
+      [955,230, 12],
+      [955,279, 7],
+      [955,324, 11],
+      [955,369, 5],
+      [955,414, 15],
+    ].map(([x, y, index]) =>
+      this.physics.add.sprite(x, y, `${index}ball`).setScale(0.6).setBounce(1, 1).setDrag(10, 10).setCircle(35)
     );
     balls.push(this.whiteball);
 

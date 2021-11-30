@@ -1,4 +1,5 @@
 import * as Phaser from 'phaser';
+import { setElementProperty } from './dom-elements';
 
 class Scene extends Phaser.Scene {
   constructor() {
@@ -11,6 +12,7 @@ class Scene extends Phaser.Scene {
     this.POWER_MAXIMUM = 25;
     this.CURRENT_POWER = 0;
     this.roundInProgress = false;
+    this.whiteballFaul = false;
   }
 
   preload ()
@@ -129,6 +131,10 @@ class Scene extends Phaser.Scene {
         const angleBetween = Phaser.Math.Angle.Between(this.whiteball.x, this.whiteball.y, pointer.x, pointer.y);
         this.stick.angle = Phaser.Math.RadToDeg(angleBetween + Math.PI / 2);
       }
+
+      if(this.whiteballFaul) {
+        this.whiteball.setPosition(pointer.x, pointer.y);
+      }
     });
     this.input.on('wheel', (_a, _b, _c, delta) => {
       if(delta > 0) {
@@ -139,8 +145,12 @@ class Scene extends Phaser.Scene {
     });
 
     this.input.on('pointerdown', () => {
-      if(!this.roundInProgress) {
+      if(!this.roundInProgress && !this.whiteballFaul) {
         this.isPointerDown = true;
+      }
+      if(this.whiteballFaul) {
+        this.whiteballFaul = false;
+        setElementProperty('place-ball', 'hidden', true);
       }
     });
 
@@ -169,6 +179,12 @@ class Scene extends Phaser.Scene {
       ball.y = 500;
       ball.setVelocity(0, 0);
       console.log(ball, number);
+    }
+    if(ball.name === 'white') {
+      this.whiteballFaul = true;
+      setElementProperty('place-ball', 'hidden', undefined);
+      this.roundInProgress = false;
+      this.whiteball.setVelocity(0, 0);
     }
   }
 

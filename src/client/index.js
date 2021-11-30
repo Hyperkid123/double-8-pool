@@ -7,8 +7,8 @@ class Scene extends Phaser.Scene {
     this.mouseFollow;
     this.stick;
     this.isPointerDown = false;
-    this.POWER_INCREMENT = 0.1;
-    this.POWER_MAXIMUM = 10;
+    this.POWER_INCREMENT = 0.4;
+    this.POWER_MAXIMUM = 15;
     this.CURRENT_POWER = 0;
   }
 
@@ -114,7 +114,7 @@ class Scene extends Phaser.Scene {
 
       this.stick.setOrigin(0.5,-0.065);
 
-      const newVel = this.physics.velocityFromAngle(this.stick.angle - 90, 150);
+      const newVel = this.physics.velocityFromAngle(this.stick.angle - 90, this.CURRENT_POWER * 15);
       this.whiteball.setVelocity(newVel.x,newVel.y);
 
       this.CURRENT_POWER = 0;
@@ -127,7 +127,7 @@ class Scene extends Phaser.Scene {
     if(this.isPointerDown && this.CURRENT_POWER <= this.POWER_MAXIMUM) {
       this.CURRENT_POWER += this.POWER_INCREMENT;
 
-      //console.log(this.CURRENT_POWER);
+      // console.log(this.CURRENT_POWER);
       this.stick.setOrigin(0.5, -0.065 - Math.min(this.CURRENT_POWER / 100, 0.1));
     }
 

@@ -177,7 +177,11 @@ class Scene extends Phaser.Scene {
       const number = Number(ball.name.split('-').shift());
 
       ball.x = 1400;
-      ball.y = 500;
+      if(number > 10) {
+        ball.y = 500;
+      } else {
+        ball.y = 150;
+      }
       ball.setVelocity(0, 0);
       console.log(ball, number);
     }

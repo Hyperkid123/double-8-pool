@@ -1,0 +1,13 @@
+.ball-bucket {
+    position: absolute;
+    color: wheat;
+    right: 300px;
+}
+
+.ball-bucket.full {
+    top: 50px;
+}
+
+.ball-bucket.stripes {
+    top: 300px;
+}

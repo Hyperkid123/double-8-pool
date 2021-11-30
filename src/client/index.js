@@ -30,6 +30,12 @@ class Scene extends Phaser.Scene {
     this.whiteball = this.physics.add.sprite(400, 300, 'whiteball');
     this.whiteball.setScale(0.6);
     this.whiteball.setDrag(10, 10);
+    this.whiteball.setBounce(1,1);
+    this.whiteball.setCollideWorldBounds(true);
+    this.whiteball.setCircle(35);
+
+    this.input.enableDebug(this.whiteball, 0xff00ff);
+    this.whiteball.setDebug(true, true, 0xff00ff);
 
     this.physics.add.collider(table, this.whiteball);
 
@@ -103,6 +109,7 @@ const config = {
   physics: {
     default: 'arcade',
     arcade: {
+      debug: true,
       gravity: {
         y: 0,
         x: 0
@@ -113,3 +120,4 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
+

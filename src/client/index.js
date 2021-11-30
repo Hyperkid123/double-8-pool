@@ -52,9 +52,24 @@ class Scene extends Phaser.Scene {
       this.physics.add.sprite(40, 97, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
       this.physics.add.sprite(52, 109, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
 
-      this.physics.add.sprite(26, 83, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
-      this.physics.add.sprite(40, 97, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
-      this.physics.add.sprite(52, 109, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
+      ...[[25, 62], [36, 46], [58, 41], [74, 49], [85, 60], [97, 69]].map(([x, y]) =>
+        this.physics.add.sprite(x, y, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
+      ),
+      ...[[42, 563], [24, 587], [31, 614], [48, 625], [68, 620], [84, 604], [96, 593]].map(([x, y]) =>
+        this.physics.add.sprite(x, y, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
+      ),
+      ...[[578,591],[579,606],[593,623],[618,625],[635,609],[639,600],[636,585]].map(([x, y]) =>
+        this.physics.add.sprite(x, y, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
+      ),
+      ...[[578,72],[580,54],[593,42],[614,39],[630,50],[637,68]].map(([x, y]) =>
+        this.physics.add.sprite(x, y, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
+      ),
+      ...[[1156,591],[1166,604],[1182,618],[1207,622],[1226,605],[1228,581],[1212,564],[1195,551]].map(([x, y]) =>
+        this.physics.add.sprite(x, y, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
+      ),
+      ...[[1157,72],[1171,57],[1191,43],[1218,46],[1232,66],[1228,86],[1214,100],[1199,111],[1193,116]].map(([x, y]) =>
+        this.physics.add.sprite(x, y, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
+      ),
     ];
 
     this.physics.add.collider(table, this.whiteball);
@@ -87,12 +102,12 @@ class Scene extends Phaser.Scene {
     });
 
     this.input.on('pointerdown', () => {
-      console.log('INPUT DOWN');
+      //console.log('INPUT DOWN');
       this.isPointerDown = true;
     });
 
     this.input.on('pointerup', (pointer) => {
-      console.log('INPUT UP');
+      //console.log('INPUT UP');
       this.isPointerDown = false;
       //this.stick.x = pointer.x
       //this.stick.y = pointer.y
@@ -112,7 +127,7 @@ class Scene extends Phaser.Scene {
     if(this.isPointerDown && this.CURRENT_POWER <= this.POWER_MAXIMUM) {
       this.CURRENT_POWER += this.POWER_INCREMENT;
 
-      console.log(this.CURRENT_POWER);
+      //console.log(this.CURRENT_POWER);
       this.stick.setOrigin(0.5, -0.065 - Math.min(this.CURRENT_POWER / 100, 0.1));
     }
 

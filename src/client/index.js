@@ -26,8 +26,9 @@ class Scene extends Phaser.Scene {
     this.graphics = this.add.graphics();
     const table = this.physics.add.staticImage(1253/2, 652/2, 'table').refreshBody()
     this.whiteball = this.physics.add.sprite(400, 300, 'whiteball');
+    this.whiteball.setScale(0.8);
     this.stick = this.physics.add.sprite(100, 100, 'stick');
-    this.stick.setOrigin(0, 0)
+    this.stick.setOrigin(0.5, -0.065)
     this.stick.setRotation(Math.PI / 2)
     window.stick = this.stick
     this.mouseFollow = new Phaser.Geom.Circle(0, 0, 25)
@@ -64,7 +65,7 @@ class Scene extends Phaser.Scene {
       //this.stick.x = pointer.x
       //this.stick.y = pointer.y
 
-      this.stick.setOrigin(0,0)
+      this.stick.setOrigin(0.5,-0.065)
     })
   }
 
@@ -74,7 +75,7 @@ class Scene extends Phaser.Scene {
       this.CURRENT_POWER += this.POWER_INCREMENT
 
       console.log(this.CURRENT_POWER)
-      this.stick.setOrigin(0, - Math.min(this.CURRENT_POWER / 100, 0.1))
+      this.stick.setOrigin(0.5, -0.065 - Math.min(this.CURRENT_POWER / 100, 0.1))
     }
 
     this.graphics.lineStyle(1, 0x5391c9, 1);

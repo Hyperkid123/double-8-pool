@@ -151,6 +151,7 @@ class Scene extends Phaser.Scene {
       if(this.whiteballFaul) {
         this.whiteballFaul = false;
         setElementProperty('place-ball', 'hidden', true);
+        this.whiteball.body.enable = true;
       }
     });
 
@@ -185,6 +186,7 @@ class Scene extends Phaser.Scene {
       setElementProperty('place-ball', 'hidden', undefined);
       this.roundInProgress = false;
       this.whiteball.setVelocity(0, 0);
+      this.whiteball.body.enable = false;
     }
   }
 

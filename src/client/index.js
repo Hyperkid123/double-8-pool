@@ -38,6 +38,11 @@ class Scene extends Phaser.Scene {
     this.input.enableDebug(this.whiteball, 0xff00ff);
     this.whiteball.setDebug(true, true, 0xff00ff);
 
+
+    const holes = [[50,60], [50,600], [610,600], [1200,600], [1200,60], [610,60]].map(([x, y]) =>
+      this.physics.add.sprite(x, y, 'whiteball').setScale(0.1, 0.1).setCircle(30).setAlpha(0)
+    );
+
     const boxes = [
       // hlavní stěny
       this.physics.add.sprite(65, 120, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 420),
@@ -74,6 +79,8 @@ class Scene extends Phaser.Scene {
 
     this.physics.add.collider(table, this.whiteball);
     this.physics.add.collider(boxes, this.whiteball);
+
+    this.physics.add.overlap(this.whiteball, holes, () => console.log('KOULE V DIRE'), null, this);
 
     this.stick = this.physics.add.sprite(100, 100, 'stick');
     this.stick.setOrigin(0.5, -0.065);
@@ -113,6 +120,8 @@ class Scene extends Phaser.Scene {
       //this.stick.y = pointer.y
 
       this.stick.setOrigin(0.5,-0.065);
+
+      console.log(`[${pointer.x},${pointer.y}]`);
 
       const newVel = this.physics.velocityFromAngle(this.stick.angle - 90, this.CURRENT_POWER * 15);
       this.whiteball.setVelocity(newVel.x,newVel.y);

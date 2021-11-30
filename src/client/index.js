@@ -40,6 +40,7 @@ class Scene extends Phaser.Scene {
     this.whiteball.setCollideWorldBounds(true);
     this.whiteball.setCircle(35);
     this.whiteball.setDamping(true);
+    this.whiteball.setName('white');
 
     this.input.enableDebug(this.whiteball, 0xff00ff);
     this.whiteball.setDebug(true, true, 0xff00ff);
@@ -49,7 +50,7 @@ class Scene extends Phaser.Scene {
       this.physics.add.sprite(x, y, 'whiteball').setScale(0.1, 0.1).setCircle(30).setAlpha(0)
     );
 
-    const balls = [
+    this.balls = [
       [800,321, 1],
 
       [837,295, 13],
@@ -70,9 +71,9 @@ class Scene extends Phaser.Scene {
       [955,369, 5],
       [955,414, 15],
     ].map(([x, y, index]) =>
-      this.physics.add.sprite(x, y, `${index}ball`).setScale(0.6).setBounce(0.8, 0.8).setDrag(0.75).setCircle(35).setDamping(true)
+      this.physics.add.sprite(x, y, `${index}ball`).setScale(0.6).setBounce(0.8, 0.8).setDrag(0.75).setCircle(35).setDamping(true).setName(`${index}-ball`)
     );
-    balls.push(this.whiteball);
+    this.balls.push(this.whiteball);
 
     const boxes = [
       // hlavní stěny
@@ -108,9 +109,9 @@ class Scene extends Phaser.Scene {
       ),
     ];
 
-    this.physics.add.collider(boxes, balls);
-    this.physics.add.collider(balls, balls);
-    this.physics.add.overlap(balls, holes, (...args) => console.log('KOULE V DIRE', ...args), null, this);
+    this.physics.add.collider(boxes, this.balls);
+    this.physics.add.collider(this.balls, this.balls);
+    this.physics.add.overlap(this.balls, holes, this.ballInHole, null, this);
 
     this.stick = this.physics.add.sprite(100, 100, 'stick');
     this.stick.setOrigin(0.5, -0.065);
@@ -122,11 +123,9 @@ class Scene extends Phaser.Scene {
       if(!this.isPointerDown) {
         this.mouseFollow.x = pointer.x;
         this.mouseFollow.y = pointer.y;
-        const point =  Phaser.Math.RotateAroundDistance({x: this.whiteball.x, y: this.whiteball.y}, this.stick.x, this.stick.y, this.stick.angle, 50);
         this.stick.x = this.whiteball.x;
         this.stick.y = this.whiteball.y;
         const angleBetween = Phaser.Math.Angle.Between(this.whiteball.x, this.whiteball.y, pointer.x, pointer.y);
-        //console.log({angleBetween, inGed: Phaser.Math.Angle.WrapDegrees(angleBetween)})
         this.stick.angle = Phaser.Math.RadToDeg(angleBetween + Math.PI / 2);
       }
     });
@@ -160,6 +159,17 @@ class Scene extends Phaser.Scene {
     });
   }
 
+  ballInHole(ball, hole) {
+    if(ball.name !== 'white') {
+      const number = Number(ball.name.split('-').shift());
+
+      ball.x = 1400;
+      ball.y = 500;
+      ball.setVelocity(0, 0);
+      console.log(ball, number);
+    }
+  }
+
   update() {
     this.graphics.clear();
 
@@ -179,7 +189,7 @@ class Scene extends Phaser.Scene {
 
 const config = {
   type: Phaser.AUTO,
-  width: 1253,
+  width: 1600,
   height: 632,
   physics: {
     default: 'arcade',

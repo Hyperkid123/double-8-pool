@@ -19,6 +19,7 @@ class Scene extends Phaser.Scene {
     this.load.spritesheet('whiteball', 'assets/whiteball.png', {frameWidth: 69, frameHeight: 68});
     this.load.image('table', 'assets/table.png');
     this.load.spritesheet('stick', 'assets/stick.png', {frameWidth: 11, frameHeight: 455});
+    this.load.spritesheet('rectangle', 'assets/rectangle.png', {frameWidth: 1, frameHeight: 1});
   }
 
   create ()
@@ -37,7 +38,27 @@ class Scene extends Phaser.Scene {
     this.input.enableDebug(this.whiteball, 0xff00ff);
     this.whiteball.setDebug(true, true, 0xff00ff);
 
+    const boxes = [
+      // hlavní stěny
+      this.physics.add.sprite(65, 120, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 420),
+      this.physics.add.sprite(1185, 120, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 420),
+      this.physics.add.sprite(107, 79, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(470, 1),
+      this.physics.add.sprite(632, 79, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(518, 1),
+      this.physics.add.sprite(107, 580, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(470, 1),
+      this.physics.add.sprite(632, 580, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(518, 1),
+
+      // levá horní díra
+      this.physics.add.sprite(26, 83, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
+      this.physics.add.sprite(40, 97, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
+      this.physics.add.sprite(52, 109, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
+
+      this.physics.add.sprite(26, 83, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
+      this.physics.add.sprite(40, 97, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
+      this.physics.add.sprite(52, 109, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
+    ];
+
     this.physics.add.collider(table, this.whiteball);
+    this.physics.add.collider(boxes, this.whiteball);
 
     this.stick = this.physics.add.sprite(100, 100, 'stick');
     this.stick.setOrigin(0.5, -0.065);
@@ -78,7 +99,7 @@ class Scene extends Phaser.Scene {
 
       this.stick.setOrigin(0.5,-0.065);
 
-      const newVel = this.physics.velocityFromAngle(this.stick.angle - 90, 100);
+      const newVel = this.physics.velocityFromAngle(this.stick.angle - 90, 150);
       this.whiteball.setVelocity(newVel.x,newVel.y);
 
       this.CURRENT_POWER = 0;

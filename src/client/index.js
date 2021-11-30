@@ -66,6 +66,7 @@ class Scene extends Phaser.Scene {
     ].map(([x, y]) =>
       this.physics.add.sprite(x, y, 'whiteball').setScale(0.6).setBounce(1, 1).setDrag(10, 10).setCircle(35)
     );
+    balls.push(this.whiteball);
 
     const boxes = [
       // hlavní stěny
@@ -101,10 +102,9 @@ class Scene extends Phaser.Scene {
       ),
     ];
 
-    this.physics.add.collider(table, this.whiteball);
-    this.physics.add.collider(boxes, this.whiteball);
-
-    this.physics.add.overlap(this.whiteball, holes, () => console.log('KOULE V DIRE'), null, this);
+    this.physics.add.collider(boxes, balls);
+    this.physics.add.collider(balls, balls);
+    this.physics.add.overlap(balls, holes, () => console.log('KOULE V DIRE'), null, this);
 
     this.stick = this.physics.add.sprite(100, 100, 'stick');
     this.stick.setOrigin(0.5, -0.065);

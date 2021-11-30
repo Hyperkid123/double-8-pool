@@ -3,10 +3,11 @@ import { setElementProperty } from './dom-elements';
 
 const BALL_TYPES = {
   STRIPPES: 'STRIPES',
-  FULL: 'FULL'
+  FULL: 'FULL',
+  NONE: 'NONE'
 };
 
-const getBallType = (number) => number < 10 ? BALL_TYPES.STRIPPES : BALL_TYPES.FULL;
+const getBallType = (number) => number < 8 ? BALL_TYPES.STRIPPES : BALL_TYPES.FULL;
 
 class Scene extends Phaser.Scene {
   constructor() {
@@ -24,6 +25,10 @@ class Scene extends Phaser.Scene {
     this.stripedRemaining = 7;
     this.currentBallType = undefined;
     this.ballTypeFaul = false;
+    this.wrongYouchFaul = false;
+    this.noYouchFaul = false;
+    this.firstTouchType = undefined;
+    this.hasRoundColision = false;
   }
 
   preload ()
@@ -124,7 +129,7 @@ class Scene extends Phaser.Scene {
     ];
 
     this.physics.add.collider(boxes, this.balls);
-    this.physics.add.collider(this.balls, this.balls);
+    this.physics.add.collider(this.balls, this.balls, this.ballCollistion, null, this);
     this.physics.add.overlap(this.balls, holes, this.ballInHole, null, this);
 
     this.stick = this.physics.add.sprite(100, 100, 'stick');
@@ -160,13 +165,7 @@ class Scene extends Phaser.Scene {
         this.isPointerDown = true;
       }
       if(this.whiteballFaul || this.ballTypeFaul) {
-        this.whiteballFaul = false;
-        this.ballTypeFaul = false;
-        setElementProperty('place-ball', 'hidden', true);
-        this.whiteball.body.enable = true;
-        if(typeof this.currentBallType !== 'undefined') {
-          this.currentBallType = this.currentBallType === BALL_TYPES.STRIPPES ? BALL_TYPES.FULL : BALL_TYPES.STRIPPES;
-        }
+        this.clearFaul();
       }
     });
 
@@ -185,6 +184,47 @@ class Scene extends Phaser.Scene {
         this.CURRENT_POWER = 0;
       }
     });
+  }
+
+  ballCollistion(ballOne, ballTwo) {
+    let scoreBall;
+    if(this.hasRoundColision && (ballOne.name !== 'white' || ballTwo !== 'white')) {
+      /**
+       * do not process score balls collision or subsequent white balls collisions
+       */
+      return;
+    }
+    if(ballOne.name === 'white') {
+      scoreBall = ballTwo;
+    } else {
+      scoreBall = ballOne;
+    }
+    console.log({ ballOne, ballTwo, scoreBall, bt: getBallType(scoreBall),cb: this.currentBallType });
+    if(typeof this.currentBallType !== 'undefined' && this.currentBallType !== getBallType(scoreBall)) {
+      this.setBallTypeFaul();
+    }
+    this.currentBallType = getBallType(scoreBall);
+    this.hasRoundColision = true;
+
+
+  }
+
+  clearFaul() {
+    this.whiteballFaul = false;
+    this.ballTypeFaul = false;
+    setElementProperty('place-ball', 'hidden', true);
+    this.whiteball.body.enable = true;
+    if(typeof this.currentBallType !== 'undefined') {
+      this.currentBallType = this.currentBallType === BALL_TYPES.STRIPPES ? BALL_TYPES.FULL : BALL_TYPES.STRIPPES;
+    }
+    this.roundInProgress = false;
+  }
+
+  setBallTypeFaul() {
+    this.ballTypeFaul = true;
+    setElementProperty('place-ball', 'hidden', undefined);
+    this.whiteball.setVelocity(0, 0);
+    this.whiteball.body.enable = false;
   }
 
   checkWinCondition() {
@@ -211,28 +251,19 @@ class Scene extends Phaser.Scene {
         }
       }
       const ballType = getBallType(number);
-      console.log({
-        ct: this.currentBallType,
-        ballType,
-        cond: typeof this.currentBallType !== 'undefined' && ballType !== this.currentBallType,
-        faul: this.ballTypeFaul
-      });
       if(typeof this.currentBallType !== 'undefined' && ballType !== this.currentBallType) {
-        this.ballTypeFaul = true;
-        setElementProperty('place-ball', 'hidden', undefined);
-        this.whiteball.setVelocity(0, 0);
-        this.whiteball.body.enable = false;
+        this.setBallTypeFaul();
       }
 
       this.currentBallType = ballType;
 
       ball.x = 1400;
-      if(ballType === BALL_TYPES.STRIPPES) {
+      if(ballType === BALL_TYPES.FULL) {
         ball.y = 500;
-        this.stripedRemaining -= 1;
+        this.fullRemaining -= 1;
       } else {
         ball.y = 150;
-        this.fullRemaining -= 1;
+        this.stripedRemaining -= 1;
       }
       ball.setVelocity(0, 0);
       console.log(ball, number);
@@ -251,9 +282,10 @@ class Scene extends Phaser.Scene {
     /**
      * To speed up slowdown of the white ball
      */
-    if(x !== 0 && y !== 0 && Math.abs(x) <= 0.35 && Math.abs(y) <= 0.35) {
+    if(x !== 0 && y !== 0 && Math.abs(x) <= 0.9 && Math.abs(y) <= 0.9) {
       this.whiteball.setVelocity(0, 0);
       this.roundInProgress = false;
+      this.hasRoundColision = false;
     }
 
   }
@@ -271,6 +303,13 @@ class Scene extends Phaser.Scene {
     this.graphics.lineStyle(1, 0x5391c9, 1);
 
     this.graphics.strokeCircleShape(this.mouseFollow);
+    setElementProperty('debug', 'textContent', JSON.stringify({
+      whiteballFaul: this.whiteballFaul,
+      ballTypeFaul: this.ballTypeFaul,
+      roundInProgress: this.roundInProgress,
+      currentBallType: this.currentBallType,
+      hasRoundColision: this.hasRoundColision
+    }, null, 2));
     if(this.roundInProgress) {
       this.stick.setAlpha(0);
       this.manageWhiteBallVelocity();

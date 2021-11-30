@@ -11,3 +11,9 @@
 .ball-bucket.stripes {
     top: 300px;
 }
+
+.debug {
+    position: absolute;
+    top: 0;
+    right: 0;
+}

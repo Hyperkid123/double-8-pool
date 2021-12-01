@@ -42,12 +42,17 @@ class MyRoom extends Room {
 
   // client joined: bring your own logic
   async onJoin(client, options) {
-    console.log('onJoin');
+    console.log('onJoin', options, client);
 
     this.players[client.id] = {
       balls: undefined,
       stroke: undefined
     };
+
+    console.log(this.players);
+    if(Object.keys(this.players).length === this.maxClients) {
+      this.broadcast('oponent-joined');
+    }
   }
 
   // client left: bring your own logic

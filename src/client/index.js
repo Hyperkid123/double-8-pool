@@ -14,7 +14,7 @@ let roomInstance;
 let ballIndex;
 let clientId;
 let moveBall;
-
+let oponentConnected = false;
 class Scene extends Phaser.Scene {
   constructor() {
     super();
@@ -26,15 +26,14 @@ class Scene extends Phaser.Scene {
     this.POWER_MAXIMUM = 25;
     this.CURRENT_POWER = 0;
     this.roundInProgress = false;
-    this.whiteballFaul = false;
     this.fullRemaining = 7;
     this.stripedRemaining = 7;
     this.currentBallType = undefined;
-    this.ballTypeFaul = false;
-    this.wrongYouchFaul = false;
-    this.noYouchFaul = false;
     this.firstTouchType = undefined;
     this.hasRoundColision = false;
+
+    this.myBalls = ballIndex ? BALL_TYPES.STRIPPES : BALL_TYPES.FULL;
+    setElementProperty('game-status', 'textContent', `You have: ${this.myBalls} balls.`);
   }
 
   preload ()
@@ -218,21 +217,9 @@ class Scene extends Phaser.Scene {
   }
 
   clearFaul() {
-    this.whiteballFaul = false;
-    this.ballTypeFaul = false;
-    setElementProperty('place-ball', 'hidden', true);
-    this.whiteball.body.enable = true;
-    if(typeof this.currentBallType !== 'undefined') {
-      this.currentBallType = this.currentBallType === BALL_TYPES.STRIPPES ? BALL_TYPES.FULL : BALL_TYPES.STRIPPES;
-    }
-    this.roundInProgress = false;
   }
 
   setBallTypeFaul() {
-    this.ballTypeFaul = true;
-    setElementProperty('place-ball', 'hidden', undefined);
-    this.whiteball.setVelocity(0, 0);
-    this.whiteball.body.enable = false;
   }
 
   checkWinCondition() {
@@ -274,14 +261,14 @@ class Scene extends Phaser.Scene {
         this.stripedRemaining -= 1;
       }
       ball.setVelocity(0, 0);
-      console.log(ball, number);
+      this.checkWinCondition();
     }
     if(ball.name === 'white') {
-      this.whiteballFaul = true;
-      setElementProperty('place-ball', 'hidden', undefined);
-      this.roundInProgress = false;
-      this.whiteball.setVelocity(0, 0);
-      this.whiteball.body.enable = false;
+      // this.whiteballFaul = true;
+      // setElementProperty('place-ball', 'hidden', undefined);
+      // this.roundInProgress = false;
+      // this.whiteball.setVelocity(0, 0);
+      // this.whiteball.body.enable = false;
     }
   }
 
@@ -348,7 +335,7 @@ const config = {
 
 let game;
 
-const client = new Client("ws://localhost:2567");
+const client = new Client("ws://25.48.31.195:2567");
 
 function onLeave(code) {
   console.log("You've been disconnected.", code);
@@ -375,8 +362,15 @@ function connectById (id) {
     game = new Phaser.Game(config);
     room.onMessage('turn-ended', turnEnded);
     room.onLeave(onLeave);
+    console.log('Oponent connected');
   })
     .catch(catchError);
+}
+
+function oponentJoined() {
+  oponentConnected = true;
+  setElementProperty('waiting', 'hidden', true);
+  game = new Phaser.Game(config);
 }
 
 function createRoom () {
@@ -385,9 +379,10 @@ function createRoom () {
     clientId = room.sessionId;
     setElementProperty('your-room', 'textContent', "Your room is: " + room.id);
     ballIndex = 0;
-    game = new Phaser.Game(config);
     room.onMessage('turn-ended', turnEnded);
     room.onLeave(onLeave);
+    room.onMessage('oponent-joined', oponentJoined);
+    console.log('You have created a room');
   })
     .catch(catchError);
 }

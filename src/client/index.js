@@ -67,6 +67,10 @@ class Scene extends Phaser.Scene {
     return ball;
   }
 
+  createBarrier(x,y, scaleX = 1, scaleY = 1) {
+    this.physics.add.sprite(x, y, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(scaleX, scaleY);
+  }
+
   create ()
   {
     moveBall = this.moveBall.bind(this);
@@ -110,36 +114,22 @@ class Scene extends Phaser.Scene {
 
     const boxes = [
       // hlavní stěny
-      this.physics.add.sprite(65, 120, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 420),
-      this.physics.add.sprite(1185, 120, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 420),
-      this.physics.add.sprite(107, 79, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(470, 1),
-      this.physics.add.sprite(632, 79, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(518, 1),
-      this.physics.add.sprite(107, 580, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(470, 1),
-      this.physics.add.sprite(632, 580, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(518, 1),
+      this.createBarrier(65, 120, 1, 420),
+      this.createBarrier(1185, 120, 1, 420),
+      this.createBarrier(107, 79, 470),
+      this.createBarrier(632, 79, 518),
+      this.createBarrier(107, 580, 470),
+      this.createBarrier(632, 580, 518),
 
-      // levá horní díra
-      this.physics.add.sprite(26, 83, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
-      this.physics.add.sprite(40, 97, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
-      this.physics.add.sprite(52, 109, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
-
-      ...[[25, 62], [36, 46], [58, 41], [74, 49], [85, 60], [97, 69]].map(([x, y]) =>
-        this.physics.add.sprite(x, y, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
-      ),
-      ...[[42, 563], [24, 587], [31, 614], [48, 625], [68, 620], [84, 604], [96, 593]].map(([x, y]) =>
-        this.physics.add.sprite(x, y, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
-      ),
-      ...[[578,591],[579,606],[593,623],[618,625],[635,609],[639,600],[636,585]].map(([x, y]) =>
-        this.physics.add.sprite(x, y, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
-      ),
-      ...[[578,72],[580,54],[593,42],[614,39],[630,50],[637,68]].map(([x, y]) =>
-        this.physics.add.sprite(x, y, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
-      ),
-      ...[[1156,591],[1166,604],[1182,618],[1207,622],[1226,605],[1228,581],[1212,564],[1195,551]].map(([x, y]) =>
-        this.physics.add.sprite(x, y, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
-      ),
-      ...[[1157,72],[1171,57],[1191,43],[1218,46],[1232,66],[1228,86],[1214,100],[1199,111],[1193,116]].map(([x, y]) =>
-        this.physics.add.sprite(x, y, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(1, 1),
-      ),
+      ...[
+        [26, 83], [40, 97], [52, 109],
+        [25, 62], [36, 46], [58, 41], [74, 49], [85, 60], [97, 69],
+        [42, 563], [24, 587], [31, 614], [48, 625], [68, 620], [84, 604], [96, 593],
+        [578,591],[579,606],[593,623],[618,625],[635,609],[639,600],[636,585],
+        [578,72],[580,54],[593,42],[614,39],[630,50],[637,68],
+        [1156,591],[1166,604],[1182,618],[1207,622],[1226,605],[1228,581],[1212,564],[1195,551],
+        [1157,72],[1171,57],[1191,43],[1218,46],[1232,66],[1228,86],[1214,100],[1199,111],[1193,116]
+      ].map(([x, y]) => this.createBarrier(x, y)),
     ];
 
     this.physics.add.collider(boxes, this.balls);

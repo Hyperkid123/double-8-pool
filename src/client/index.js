@@ -346,7 +346,7 @@ const client = new Client("ws://localhost:2567");
 function connect (roomName) {
   return client.joinOrCreate("my_room", {
     id: roomName
-  }).then(room => {
+  }).then(room => {
     room.onStateChange((newState) => {
       console.log("New state:", newState);
     });
@@ -355,9 +355,17 @@ function connect (roomName) {
       console.log("You've been disconnected.", code);
     });
   })
-    .catch(e  => {
+    .catch(e  => {
       console.error("Couldn't connect:", e);
     });
 }
 
-connect('1234');
+document.getElementById("connect-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const room = event.target.elements.room.value;
+
+  console.log('connecting to room: ', room);
+
+  connect(room);
+});

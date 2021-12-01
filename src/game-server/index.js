@@ -9,10 +9,6 @@ class MyRoom extends Room {
   rooms = {};
 
   mapEachPlayer(callback, roomId) {
-    console.log({
-      rooms: this.rooms,
-      roomId
-    });
     return Object.keys(this.rooms[roomId].players).map(player => callback(player, this.rooms[roomId].players[player]));
   }
 
@@ -37,7 +33,7 @@ class MyRoom extends Room {
       this.rooms[roomId].players[client.id].stroke = stroke;
 
       if(this.mapEachPlayer((_, { stroke }) => !!stroke, roomId).every((bool) => bool)) {
-        this.broadcast('turn-ended', this.mapEachPlayer((player, {stroke}) => ({player, stroke}), roomId));
+        this.broadcast('turn-ended', this.mapEachPlayer((player, {stroke}) => ({player, stroke, ballsStopped: false}), roomId));
 
         this.updateEachPlayer(() => ({stroke: undefined}), roomId);
       }
@@ -46,6 +42,14 @@ class MyRoom extends Room {
     this.onMessage('reset-white', (_, { ballIndex }) => {
       this.broadcast('reset-white', { ballIndex });
       this.updateEachPlayer(() => ({stroke: undefined}), roomId);
+    });
+
+    this.onMessage('balls-stopped', client => {
+      this.rooms[roomId].players[client.id].ballsStopped = true;
+      console.log('balls-stopped-signal')
+      if(this.mapEachPlayer((_, { ballsStopped }) => ballsStopped, roomId).every((bool) => bool)) {
+        this.broadcast('end-round');
+      }
     });
   }
 
@@ -64,7 +68,8 @@ class MyRoom extends Room {
     }
     this.rooms[this.roomId].players[client.id] = {
       balls: undefined,
-      stroke: undefined
+      stroke: undefined,
+      ballsStopped: true,
     };
 
     console.log(this.rooms);

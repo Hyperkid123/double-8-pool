@@ -16,6 +16,8 @@ let clientId;
 let moveBall;
 let oponentConnected = false;
 let resetBall;
+let endRound;
+let resetWait;
 class Scene extends Phaser.Scene {
   constructor() {
     super();
@@ -32,6 +34,7 @@ class Scene extends Phaser.Scene {
     this.currentBallType = undefined;
     this.firstTouchType = undefined;
     this.hasRoundColision = false;
+    this.waitingForOponentStroke = true;
 
     this.myBalls = ballIndex ? BALL_TYPES.STRIPPES : BALL_TYPES.FULL;
     setElementProperty('game-status', 'textContent', `You have: ${this.myBalls} balls.`);
@@ -78,14 +81,16 @@ class Scene extends Phaser.Scene {
   {
     moveBall = this.moveBall.bind(this);
     resetBall = this.resetBall.bind(this);
+    endRound = this.endRound.bind(this);
+    resetWait = this.resetWait.bind(this);
     this.graphics = this.add.graphics();
     const table = this.physics.add.sprite(1253/2, 652/2, 'table');
     table.refreshBody();
     this.whiteBallsPositions = [[213, 225], [213, 435]];
 
-    this.whiteball = this.createWhiteBall(...this.whiteBallsPositions[0], 0);
+    this.whiteball1 = this.createWhiteBall(...this.whiteBallsPositions[0], 0);
     this.whiteball2 = this.createWhiteBall(...this.whiteBallsPositions[1], 1);
-    this.whiteballs = [this.whiteball, this.whiteball2];
+    this.whiteballs = [this.whiteball1, this.whiteball2];
 
     const holes = [[50,60], [50,600], [610,600], [1200,600], [1200,60], [610,60]].map(([x, y]) =>
       this.physics.add.sprite(x, y, 'whiteball').setScale(0.1, 0.1).setCircle(30).setAlpha(0)
@@ -114,7 +119,7 @@ class Scene extends Phaser.Scene {
     ].map(([x, y, index]) =>
       this.physics.add.sprite(x, y, `${index}ball`).setScale(0.6).setBounce(0.8, 0.8).setDrag(0.75).setCircle(35).setDamping(true).setName(`${index}-ball`)
     );
-    this.balls.push(this.whiteball);
+    this.balls.push(this.whiteball1);
     this.balls.push(this.whiteball2);
 
     const boxes = [
@@ -156,10 +161,6 @@ class Scene extends Phaser.Scene {
         const angleBetween = Phaser.Math.Angle.Between(this.whiteballs[ballIndex].x, this.whiteballs[ballIndex].y, pointer.x, pointer.y);
         this.stick.angle = Phaser.Math.RadToDeg(angleBetween + Math.PI / 2);
       }
-
-      if(this.whiteballFaul || this.ballTypeFaul) {
-        this.whiteball.setPosition(pointer.x, pointer.y);
-      }
     });
     this.input.on('wheel', (_a, _b, _c, delta) => {
       if(delta > 0) {
@@ -182,6 +183,7 @@ class Scene extends Phaser.Scene {
       if(!this.roundInProgress) {
         this.isPointerDown = false;
         this.roundInProgress = true;
+        this.waitingForOponentStroke = true;
 
         this.stick.setOrigin(0.5,-0.065);
 
@@ -204,6 +206,15 @@ class Scene extends Phaser.Scene {
     this.whiteballs[index].setPosition(...this.whiteBallsPositions[index]);
   }
 
+  endRound() {
+    console.log('end round');
+    this.roundInProgress = false;
+  }
+
+  resetWait() {
+    this.waitingForOponentStroke = false;
+  }
+
   ballCollistion(ballOne, ballTwo) {
     let scoreBall;
     if(this.hasRoundColision && (ballOne.name !== 'white' || ballTwo !== 'white')) {
@@ -217,7 +228,6 @@ class Scene extends Phaser.Scene {
     } else {
       scoreBall = ballOne;
     }
-    console.log({ ballOne, ballTwo, scoreBall, bt: getBallType(scoreBall),cb: this.currentBallType });
     if(typeof this.currentBallType !== 'undefined' && this.currentBallType !== getBallType(scoreBall)) {
       this.setBallTypeFaul();
     }
@@ -278,27 +288,29 @@ class Scene extends Phaser.Scene {
       // this.whiteballFaul = true;
       // setElementProperty('place-ball', 'hidden', undefined);
       // this.roundInProgress = false;
-      // this.whiteball.setVelocity(0, 0);
-      // this.whiteball.body.enable = false;
       roomInstance.send('reset-white', { ballIndex });
     }
   }
 
   manageWhiteBallVelocity() {
 
-    const ballsStopped = this.whiteballs.every((ball) => {
-      const { x, y } = ball.body.velocity;
-      /**
-       * To speed up slowdown of the white ball
-       */
-      return x !== 0 && y !== 0 && Math.abs(x) <= 0.9 && Math.abs(y) <= 0.9;
-    });
-    if(ballsStopped) {
-      this.whiteballs.forEach(ball => {
-        ball.setVelocity(0, 0);
+    if(!this.waitingForOponentStroke && this.roundInProgress) {
+      const ballsStopped = this.whiteballs.every((_, index) => {
+        const { x, y } = this.whiteballs[index].body.velocity;
+        /**
+         * To speed up slowdown of the white ball
+         */
+        return Math.abs(x) <= 0.9 && Math.abs(y) <= 0.9;
       });
-      this.roundInProgress = false;
-      this.hasRoundColision = false;
+
+      if(ballsStopped) {
+        this.whiteballs.forEach((_, index) => {
+          this.whiteballs[index].setVelocity(0, 0);
+        });
+        this.hasRoundColision = false;
+        roomInstance.send('balls-stopped');
+        this.roundInProgress = false;
+      }
     }
 
   }
@@ -365,14 +377,17 @@ function turnEnded(data) {
   console.log('turn-ended', data);
 
   data.forEach((d) => {
-    console.log(game);
-    console.log(d, client);
     moveBall(d, d.player === clientId ? ballIndex : ballIndex === 0 ? 1 : 0);
   });
+  resetWait();
 }
 
 function ballReset({ballIndex}) {
   resetBall(ballIndex);
+}
+
+function endRoundMessage() {
+  endRound();
 }
 
 function connectById (id) {
@@ -384,6 +399,7 @@ function connectById (id) {
     game = new Phaser.Game(config);
     room.onMessage('turn-ended', turnEnded);
     room.onMessage('reset-white',ballReset);
+    room.message('end-round', endRoundMessage);
     room.onLeave(onLeave);
     console.log('Oponent connected', clientId);
   })
@@ -405,6 +421,7 @@ function createRoom () {
     room.onMessage('turn-ended', turnEnded);
     room.onLeave(onLeave);
     room.onMessage('reset-white',ballReset);
+    room.onMessage('end-round', endRoundMessage);
     room.onMessage('oponent-joined', oponentJoined);
     console.log('You have created a room');
   })

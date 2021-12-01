@@ -10,6 +10,11 @@ const BALL_TYPES = {
 
 const getBallType = (number) => number < 8 ? BALL_TYPES.STRIPPES : BALL_TYPES.FULL;
 
+let roomInstance;
+let ballIndex;
+let clientId;
+let moveBall;
+
 class Scene extends Phaser.Scene {
   constructor() {
     super();
@@ -47,24 +52,31 @@ class Scene extends Phaser.Scene {
     });
   }
 
+  createWhiteBall(x, y) {
+    const ball = this.physics.add.sprite(x, y, 'whiteball')
+      .setScale(0.6)
+      .setDrag(0.75)
+      .setBounce(0.8,0.8)
+      .setCollideWorldBounds(true)
+      .setCircle(35)
+      .setDamping(true)
+      .setName('white')
+      .setDebug(true, true, 0xff00ff);
+    this.input.enableDebug(ball, 0xff00ff);
+
+    return ball;
+  }
+
   create ()
   {
+    moveBall = this.moveBall.bind(this);
     this.graphics = this.add.graphics();
     const table = this.physics.add.sprite(1253/2, 652/2, 'table');
     table.refreshBody();
 
-    this.whiteball = this.physics.add.sprite(400, 300, 'whiteball');
-    this.whiteball.setScale(0.6);
-    this.whiteball.setDrag(0.75);
-    this.whiteball.setBounce(0.8,0.8);
-    this.whiteball.setCollideWorldBounds(true);
-    this.whiteball.setCircle(35);
-    this.whiteball.setDamping(true);
-    this.whiteball.setName('white');
-
-    this.input.enableDebug(this.whiteball, 0xff00ff);
-    this.whiteball.setDebug(true, true, 0xff00ff);
-
+    this.whiteball = this.createWhiteBall(213, 225);
+    this.whiteball2 = this.createWhiteBall(213, 435);
+    this.whiteballs = [this.whiteball, this.whiteball2];
 
     const holes = [[50,60], [50,600], [610,600], [1200,600], [1200,60], [610,60]].map(([x, y]) =>
       this.physics.add.sprite(x, y, 'whiteball').setScale(0.1, 0.1).setCircle(30).setAlpha(0)
@@ -94,6 +106,7 @@ class Scene extends Phaser.Scene {
       this.physics.add.sprite(x, y, `${index}ball`).setScale(0.6).setBounce(0.8, 0.8).setDrag(0.75).setCircle(35).setDamping(true).setName(`${index}-ball`)
     );
     this.balls.push(this.whiteball);
+    this.balls.push(this.whiteball2);
 
     const boxes = [
       // hlavní stěny
@@ -143,9 +156,9 @@ class Scene extends Phaser.Scene {
       if(!this.isPointerDown) {
         this.mouseFollow.x = pointer.x;
         this.mouseFollow.y = pointer.y;
-        this.stick.x = this.whiteball.x;
-        this.stick.y = this.whiteball.y;
-        const angleBetween = Phaser.Math.Angle.Between(this.whiteball.x, this.whiteball.y, pointer.x, pointer.y);
+        this.stick.x = this.whiteballs[ballIndex].x;
+        this.stick.y = this.whiteballs[ballIndex].y;
+        const angleBetween = Phaser.Math.Angle.Between(this.whiteballs[ballIndex].x, this.whiteballs[ballIndex].y, pointer.x, pointer.y);
         this.stick.angle = Phaser.Math.RadToDeg(angleBetween + Math.PI / 2);
       }
 
@@ -180,11 +193,15 @@ class Scene extends Phaser.Scene {
         console.log(`[${pointer.x},${pointer.y}]`);
 
         const newVel = this.physics.velocityFromAngle(this.stick.angle - 90, this.CURRENT_POWER * 55);
-        this.whiteball.setVelocity(newVel.x,newVel.y);
-
         this.CURRENT_POWER = 0;
+
+        roomInstance.send("stroke", {angle: this.stick.angle, velocity: newVel});
       }
     });
+  }
+
+  moveBall(data, index) {
+    this.whiteballs[index].setVelocity(data.stroke.velocity.x, data.stroke.velocity.y);
   }
 
   ballCollistion(ballOne, ballTwo) {
@@ -339,46 +356,50 @@ const config = {
   scene: [ Scene ]
 };
 
-const game = new Phaser.Game(config);
+let game;
 
 const client = new Client("ws://localhost:2567");
 
+function onLeave(code) {
+  console.log("You've been disconnected.", code);
+}
+function catchError(e) {
+  setElementProperty('error', 'textContent', "Couldn't connect: " + e);
+}
+function turnEnded(data) {
+  console.log('turn-ended', data);
+
+  data.forEach((d) => {
+    console.log(game);
+    console.log(d, client);
+    moveBall(d, d.player === clientId ? ballIndex : ballIndex === 0 ? 1 : 0);
+  });
+}
+
 function connectById (id) {
   return client.joinById(id).then(room => {
-    console.log(room);
-
+    roomInstance = room;
+    clientId = room.sessionId;
     setElementProperty('your-room', 'textContent', "Your room is: " + room.id);
-
-    room.onStateChange((newState) => {
-      console.log("New state:", newState);
-    });
-
-    room.onLeave((code) => {
-      console.log("You've been disconnected.", code);
-    });
+    ballIndex = 1;
+    game = new Phaser.Game(config);
+    room.onMessage('turn-ended', turnEnded);
+    room.onLeave(onLeave);
   })
-    .catch(e  => {
-      setElementProperty('error', 'textContent', "Couldn't connect: " + e);
-    });
+    .catch(catchError);
 }
 
 function createRoom () {
   return client.create("my_room").then(room => {
-    console.log(room);
-
+    roomInstance = room;
+    clientId = room.sessionId;
     setElementProperty('your-room', 'textContent', "Your room is: " + room.id);
-
-    room.onStateChange((newState) => {
-      console.log("New state:", newState);
-    });
-
-    room.onLeave((code) => {
-      console.log("You've been disconnected.", code);
-    });
+    ballIndex = 0;
+    game = new Phaser.Game(config);
+    room.onMessage('turn-ended', turnEnded);
+    room.onLeave(onLeave);
   })
-    .catch(e  => {
-      setElementProperty('error', 'textContent', "Couldn't connect: " + e);
-    });
+    .catch(catchError);
 }
 
 document.getElementById("connect-form").addEventListener("submit", (event) => {

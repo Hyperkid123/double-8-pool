@@ -365,13 +365,14 @@ const config = {
 
 let game;
 
-const client = new Client("ws://25.48.31.195:2567");
+const client = new Client("ws://localhost:2567");
 
 function onLeave(code) {
   console.log("You've been disconnected.", code);
 }
 function catchError(e) {
   setElementProperty('error', 'textContent', "Couldn't connect: " + e);
+  document.getElementById('error').hidden = false;
 }
 function turnEnded(data) {
   console.log('turn-ended', data);
@@ -394,14 +395,17 @@ function connectById (id) {
   return client.joinById(id).then(room => {
     roomInstance = room;
     clientId = room.sessionId;
-    setElementProperty('your-room', 'textContent', "Your room is: " + room.id);
+    setElementProperty('your-room', 'textContent', "Your room is: " + room.id + ' | ');
     ballIndex = 1;
     game = new Phaser.Game(config);
     room.onMessage('turn-ended', turnEnded);
     room.onMessage('reset-white',ballReset);
-    room.message('end-round', endRoundMessage);
+    room.onMessage('end-round', endRoundMessage);
     room.onLeave(onLeave);
     console.log('Oponent connected', clientId);
+    document.getElementById("hidden-form").hidden = true;
+    document.getElementById('error').hidden = true;
+    setElementProperty('waiting', 'hidden', true);
   })
     .catch(catchError);
 }
@@ -416,7 +420,8 @@ function createRoom () {
   return client.create("my_room").then(room => {
     roomInstance = room;
     clientId = room.sessionId;
-    setElementProperty('your-room', 'textContent', "Your room is: " + room.id);
+    setElementProperty('your-room', 'textContent', "Your room is: " + room.id + ' | ');
+    setElementProperty('waiting', 'textContent', "Waiting for oponent");
     ballIndex = 0;
     room.onMessage('turn-ended', turnEnded);
     room.onLeave(onLeave);
@@ -424,6 +429,8 @@ function createRoom () {
     room.onMessage('end-round', endRoundMessage);
     room.onMessage('oponent-joined', oponentJoined);
     console.log('You have created a room');
+    document.getElementById('error').hidden = true;
+    document.getElementById("hidden-form").hidden = true;
   })
     .catch(catchError);
 }
@@ -445,4 +452,8 @@ document.getElementById("create-room").addEventListener("click", (event) => {
 
 document.getElementById("connect-input").addEventListener("keyup", (event) => {
   document.getElementById("connect-button").disabled = !event.target.value;
+});
+
+document.getElementById("connect-room-button").addEventListener("click", () => {
+  document.getElementById("hidden-form").hidden = !document.getElementById("hidden-form").hidden;
 });

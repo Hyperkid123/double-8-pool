@@ -343,27 +343,11 @@ const game = new Phaser.Game(config);
 
 const client = new Client("ws://localhost:2567");
 
-function connect (id) {
-
-  if(id) {
-    return client.joinById(id).then(room => {
-      console.log(room);
-
-      room.onStateChange((newState) => {
-        console.log("New state:", newState);
-      });
-
-      room.onLeave((code) => {
-        console.log("You've been disconnected.", code);
-      });
-    })
-      .catch(e  => {
-        console.error("Couldn't connect:", e);
-      });
-  }
-
-  return client.create("my_room").then(room => {
+function connectById (id) {
+  return client.joinById(id).then(room => {
     console.log(room);
+
+    setElementProperty('your-room', 'textContent', "Your room is: " + room.id);
 
     room.onStateChange((newState) => {
       console.log("New state:", newState);
@@ -374,7 +358,26 @@ function connect (id) {
     });
   })
     .catch(e  => {
-      console.error("Couldn't connect:", e);
+      setElementProperty('error', 'textContent', "Couldn't connect: " + e);
+    });
+}
+
+function createRoom () {
+  return client.create("my_room").then(room => {
+    console.log(room);
+
+    setElementProperty('your-room', 'textContent', "Your room is: " + room.id);
+
+    room.onStateChange((newState) => {
+      console.log("New state:", newState);
+    });
+
+    room.onLeave((code) => {
+      console.log("You've been disconnected.", code);
+    });
+  })
+    .catch(e  => {
+      setElementProperty('error', 'textContent', "Couldn't connect: " + e);
     });
 }
 
@@ -385,5 +388,10 @@ document.getElementById("connect-form").addEventListener("submit", (event) => {
 
   console.log('connecting to room: ', room);
 
-  connect(room);
+  connectById(room);
+});
+
+document.getElementById("create-room").addEventListener("click", (event) => {
+  event.preventDefault();
+  createRoom();
 });

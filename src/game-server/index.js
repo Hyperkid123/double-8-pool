@@ -6,16 +6,21 @@ class MyRoom extends Room {
   // number of clients per room
   // (colyseus will create the room instances for you)
   maxClients = 2;
+  rooms = {};
 
-  mapEachPlayer(callback) {
-    return Object.keys(this.players).map(player => callback(player, this.players[player]));
+  mapEachPlayer(callback, roomId) {
+    console.log({
+      rooms: this.rooms,
+      roomId
+    });
+    return Object.keys(this.rooms[roomId].players).map(player => callback(player, this.rooms[roomId].players[player]));
   }
 
-  updateEachPlayer(callback) {
-    Object.keys(this.players).forEach(player => {
-      this.players[player] = {
-        ...this.players[player],
-        ...callback(player, this.players[player])
+  updateEachPlayer(callback, roomId) {
+    Object.keys(this.rooms[roomId].players).forEach(player => {
+      this.rooms[this.roomId].players[player] = {
+        ...this.rooms[this.roomId].players[player],
+        ...callback(player, this.rooms[this.roomId].players[player])
       };
     });
   }
@@ -24,35 +29,47 @@ class MyRoom extends Room {
   async onCreate(options) {
     console.log('onCreate');
 
-    this.players = {};
-
     //this.setState({status: "Waiting for other player"});
     this.onMessage("stroke", (client, stroke) => {
-      console.log("stroke: ", client.id, stroke);
+      const roomId = this.roomId;
 
-      this.players[client.id].stroke = stroke;
+      console.log("stroke: ", client.id, stroke, this.rooms[roomId].players);
+      this.rooms[roomId].players[client.id].stroke = stroke;
 
-      if(this.mapEachPlayer((_, { stroke }) => !!stroke).every((bool) => bool)) {
-        this.broadcast('turn-ended', this.mapEachPlayer((player, {stroke}) => ({player, stroke})));
+      if(this.mapEachPlayer((_, { stroke }) => !!stroke, roomId).every((bool) => bool)) {
+        this.broadcast('turn-ended', this.mapEachPlayer((player, {stroke}) => ({player, stroke}), roomId));
 
-        this.updateEachPlayer(() => ({stroke: undefined}));
+        this.updateEachPlayer(() => ({stroke: undefined}), roomId);
       }
     });
   }
 
   // client joined: bring your own logic
   async onJoin(client, options) {
-    console.log('onJoin', options, client);
+    console.log('onJoin', this.roomId);
 
-    this.players[client.id] = {
+    if(!this.rooms[this.roomId]) {
+      this.rooms[this.roomId] = {
+        players: {}
+      };
+    }
+    if(Object.keys(this.rooms[this.roomId].players).length === this.maxClients) {
+      console.log('Room is full callback');
+      return;
+    }
+    this.rooms[this.roomId].players[client.id] = {
       balls: undefined,
       stroke: undefined
     };
 
-    console.log(this.players);
-    if(Object.keys(this.players).length === this.maxClients) {
+    console.log(this.rooms);
+    if(Object.keys(this.rooms[this.roomId].players).length === this.maxClients) {
+      /**
+       * Send signal for host to create pahzer game instance
+       */
       this.broadcast('oponent-joined');
     }
+
   }
 
   // client left: bring your own logic

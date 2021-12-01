@@ -362,7 +362,7 @@ function connectById (id) {
     game = new Phaser.Game(config);
     room.onMessage('turn-ended', turnEnded);
     room.onLeave(onLeave);
-    console.log('Oponent connected');
+    console.log('Oponent connected', clientId);
   })
     .catch(catchError);
 }

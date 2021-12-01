@@ -23,6 +23,7 @@
     "build": "webpack --mode development",
     "dev": "node src/server/index.js",
     "compile:client": "babel src/client --out-dir dist/client",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "game:server": "node src/game-server/index.js"
   }
 }

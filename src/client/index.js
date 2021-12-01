@@ -343,10 +343,28 @@ const game = new Phaser.Game(config);
 
 const client = new Client("ws://localhost:2567");
 
-function connect (roomName) {
-  return client.joinOrCreate("my_room", {
-    id: roomName
-  }).then(room => {
+function connect (id) {
+
+  if(id) {
+    return client.joinById(id).then(room => {
+      console.log(room);
+
+      room.onStateChange((newState) => {
+        console.log("New state:", newState);
+      });
+
+      room.onLeave((code) => {
+        console.log("You've been disconnected.", code);
+      });
+    })
+      .catch(e  => {
+        console.error("Couldn't connect:", e);
+      });
+  }
+
+  return client.create("my_room").then(room => {
+    console.log(room);
+
     room.onStateChange((newState) => {
       console.log("New state:", newState);
     });

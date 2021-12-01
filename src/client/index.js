@@ -1,5 +1,6 @@
 import * as Phaser from 'phaser';
 import { setElementProperty } from './dom-elements';
+import { Client } from "colyseus.js";
 
 const BALL_TYPES = {
   STRIPPES: 'STRIPES',
@@ -340,3 +341,23 @@ const config = {
 
 const game = new Phaser.Game(config);
 
+const client = new Client("ws://localhost:2567");
+
+function connect (roomName) {
+  return client.joinOrCreate("my_room", {
+    id: roomName
+  }).then(room => {
+    room.onStateChange((newState) => {
+      console.log("New state:", newState);
+    });
+
+    room.onLeave((code) => {
+      console.log("You've been disconnected.", code);
+    });
+  })
+    .catch(e  => {
+      console.error("Couldn't connect:", e);
+    });
+}
+
+connect('1234');

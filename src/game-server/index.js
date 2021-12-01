@@ -28,10 +28,10 @@ class MyRoom extends Room {
   // room has been created: bring your own logic
   async onCreate(options) {
     console.log('onCreate');
-
+    const roomId = this.roomId;
     //this.setState({status: "Waiting for other player"});
     this.onMessage("stroke", (client, stroke) => {
-      const roomId = this.roomId;
+
 
       console.log("stroke: ", client.id, stroke, this.rooms[roomId].players);
       this.rooms[roomId].players[client.id].stroke = stroke;
@@ -41,6 +41,11 @@ class MyRoom extends Room {
 
         this.updateEachPlayer(() => ({stroke: undefined}), roomId);
       }
+    });
+
+    this.onMessage('reset-white', (_, { ballIndex }) => {
+      this.broadcast('reset-white', { ballIndex });
+      this.updateEachPlayer(() => ({stroke: undefined}), roomId);
     });
   }
 

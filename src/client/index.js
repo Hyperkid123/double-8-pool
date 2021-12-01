@@ -395,3 +395,7 @@ document.getElementById("create-room").addEventListener("click", (event) => {
   event.preventDefault();
   createRoom();
 });
+
+document.getElementById("connect-input").addEventListener("keyup", (event) => {
+  document.getElementById("connect-button").disabled = !event.target.value;
+});

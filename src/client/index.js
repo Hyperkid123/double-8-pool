@@ -68,7 +68,7 @@ class Scene extends Phaser.Scene {
   }
 
   createBarrier(x,y, scaleX = 1, scaleY = 1) {
-    this.physics.add.sprite(x, y, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(scaleX, scaleY);
+    return this.physics.add.sprite(x, y, 'rectangle').setImmovable(true).setAlpha(0).setOrigin(0, 0).setScale(scaleX, scaleY);
   }
 
   create ()

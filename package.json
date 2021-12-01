@@ -6,9 +6,10 @@
   "author": "Martin Maroši <marvusm.mmi@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "colyseus.js": "^0.14.13",
+    "colyseus": "^0.14.23",
     "express": "^4.17.1",
-    "phaser": "3.55.2"
+    "phaser": "3.55.2",
+    "ws": "^8.3.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.16.0",

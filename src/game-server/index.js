@@ -1,7 +1,6 @@
-import { Server, Room } from "colyseus";
-import { createServer } from "http";
-import express from "express";
-
+const { Server, Room } = require('colyseus');
+const express = require('express');
+const { createServer } = require('http');
 
 class MyRoom extends Room {
   // number of clients per room

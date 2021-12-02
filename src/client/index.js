@@ -503,7 +503,7 @@ function createRoom () {
     roomInstance = room;
     clientId = room.sessionId;
     setElementProperty('your-room', 'textContent', "Your room is: " + room.id + ' | ');
-    setElementProperty('waiting', 'textContent', "Waiting for oponent");
+    setElementProperty('waiting', 'textContent', "Copied to clipboard | Waiting for oponent");
     ballIndex = 0;
     room.onMessage('turn-ended', turnEnded);
     room.onLeave(onLeave);
@@ -513,6 +513,7 @@ function createRoom () {
     console.log('You have created a room');
     document.getElementById('error').hidden = true;
     document.getElementById("hidden-form").hidden = true;
+    navigator?.clipboard?.writeText(room.id);
   })
     .catch(catchError);
 }

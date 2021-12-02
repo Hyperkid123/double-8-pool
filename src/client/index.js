@@ -437,6 +437,7 @@ const config = {
       }
     }
   },
+  backgroundColor: '#FFFFFF',
   scene: [ Scene ]
 };
 

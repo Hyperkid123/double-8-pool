@@ -283,6 +283,11 @@ class Scene extends Phaser.Scene {
   endRound() {
     this.roundInProgress = false;
     this.manageSyncServer(true);
+    const t = document.getElementById('turn-transition');
+    t.classList.add('turn-transition');
+    setTimeout(() => {
+      t.classList.remove('turn-transition');
+    }, 1000);
   }
 
   resetWait() {

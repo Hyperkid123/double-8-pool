@@ -474,6 +474,7 @@ function ballsSyncMessage(data) {
 
 function connectById (id) {
   return client.joinById(id).then(room => {
+    if(game) { game.destroy(true, false);}
     roomInstance = room;
     clientId = room.sessionId;
     setElementProperty('your-room', 'textContent', "Your room is: " + room.id + ' | ');
@@ -495,11 +496,13 @@ function connectById (id) {
 function oponentJoined() {
   oponentConnected = true;
   setElementProperty('waiting', 'hidden', true);
+  if(game) { game.destroy();}
   game = new Phaser.Game(config);
 }
 
 function createRoom () {
   return client.create("my_room").then(room => {
+    if(game) { game.destroy(true, false);}
     roomInstance = room;
     clientId = room.sessionId;
     setElementProperty('your-room', 'textContent', "Your room is: " + room.id + ' | ');

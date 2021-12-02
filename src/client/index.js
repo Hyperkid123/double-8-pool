@@ -526,8 +526,12 @@ function ballsSyncMessage(data) {
 function gameEnded(data) {
   if(data.id === clientId) {
     setElementProperty('game-status', 'textContent', `YOU WON!!!`);
+    const audio = new Audio('/assets/sounds/winning-sound.mp3');
+    audio.play();
   } else {
     setElementProperty('game-status', 'textContent', `YOU LOST!!!`);
+    const audio = new Audio('/assets/sounds/gasp.mp3');
+    audio.play();
   }
 
   game?.destroy(true, false);

@@ -207,8 +207,6 @@ class Scene extends Phaser.Scene {
 
         this.stick.setOrigin(0.5,-0.065);
 
-        console.log(`[${pointer.x},${pointer.y}]`);
-
         const newVel = this.physics.velocityFromAngle(this.stick.angle - 90, this.CURRENT_POWER * 55);
         this.CURRENT_POWER = 0;
 
@@ -243,7 +241,6 @@ class Scene extends Phaser.Scene {
   }
 
   endRound() {
-    console.log('end round');
     this.roundInProgress = false;
     this.manageSyncServer(true);
   }
@@ -398,7 +395,6 @@ class Scene extends Phaser.Scene {
     if(this.isPointerDown && this.CURRENT_POWER <= this.POWER_MAXIMUM) {
       this.CURRENT_POWER += this.POWER_INCREMENT;
 
-      // console.log(this.CURRENT_POWER);
       this.stick.setOrigin(0.5, -0.025 - Math.min(this.CURRENT_POWER / 100, 0.1));
     }
 
@@ -456,8 +452,6 @@ function catchError(e) {
   document.getElementById('error').hidden = false;
 }
 function turnEnded(data) {
-  console.log('turn-ended', data);
-
   data.forEach((d) => {
     moveBall(d, d.player === clientId ? ballIndex : ballIndex === 0 ? 1 : 0);
   });

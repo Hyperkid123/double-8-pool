@@ -55,6 +55,10 @@ class MyRoom extends Room {
     this.onMessage('balls-sync', (_, balls ) => {
       this.broadcast('balls-sync', balls);
     });
+
+    this.onMessage('player-win', (_, { clientId, oppositeId }) => {
+      this.broadcast('game-ended', { id: clientId || Object.keys(this.rooms[this.roomId].this.players).first(id => id !== oppositeId) });
+    });
   }
 
   // client joined: bring your own logic

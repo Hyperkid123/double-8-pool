@@ -19,6 +19,8 @@ let resetBall;
 let endRound;
 let resetWait;
 let ballsSync;
+let client;
+
 class Scene extends Phaser.Scene {
   constructor() {
     super();
@@ -38,6 +40,7 @@ class Scene extends Phaser.Scene {
     this.hasRoundColision = false;
     this.waitingForOponentStroke = true;
     this.updateCounter = 0;
+    this.lastBlackTouched = undefined;
 
     this.myBalls = ballIndex ? BALL_TYPES.STRIPPES : BALL_TYPES.FULL;
     setElementProperty('game-status', 'textContent', `You have: ${this.myBalls} balls.`);
@@ -99,11 +102,11 @@ class Scene extends Phaser.Scene {
       .setCircle(35)
       .setDamping(true)
       .setName('white')
-      .setData({
-        localPlayer: index === ballIndex
-      })
+      .setDataEnabled()
       .setDebug(true, true, 0xff00ff);
     this.input.enableDebug(ball, 0xff00ff);
+
+    ball.data.set('localPlayer', index === ballIndex);
 
     return ball;
   }
@@ -299,6 +302,12 @@ class Scene extends Phaser.Scene {
       this.sounds.lowVH.play();
     }
 
+    if((ballOne.name === 'white' && ballTwo.name === '8-ball' && ballIndex === 0)) {
+      this.lastBlackTouched = ballOne.getData('localPlayer') ? 0 : 1;
+    } else if (ballOne.name === '8-ball' && ballTwo.name === 'white' && ballIndex === 0) {
+      this.lastBlackTouched = ballTwo.getData('localPlayer') ? 0 : 1;
+    }
+
     if(this.hasRoundColision && (ballOne.name !== 'white' || ballTwo !== 'white')) {
       /**
        * do not process score balls collision or subsequent white balls collisions
@@ -326,17 +335,18 @@ class Scene extends Phaser.Scene {
   }
 
   checkWinCondition() {
-    /**
-     * Nechal sem to rozdelene at se ty podminky lepe ctou
-     */
-    if(this.currentBallType === BALL_TYPES.FULL && this.fullRemaining !== 0) {
-      console.log('CURRENT PLAYER LOST');
-    } else if (this.currentBallType === BALL_TYPES.STRIPPES && this.stripedRemaining !== 0) {
-      console.log('CURRENT PLAYER LOST');
-    } else if(this.currentBallType === BALL_TYPES.FULL && this.fullRemaining === 0) {
-      console.log('CURRENT PLAYER WON');
-    } else if(this.currentBallType === BALL_TYPES.STRIPPES && this.stripedRemaining === 0) {
-      console.log('CURRENT PLAYER WON');
+    if(this.lastBlackTouched === 0) {
+      if(this.fullRemaining === 0) {
+        roomInstance.send("player-win", { clientId });
+      } else {
+        roomInstance.send("player-win", { oppositeId: clientId });
+      }
+    } else {
+      if(this.stripedRemaining === 0) {
+        roomInstance.send("player-win", { oppositeId: clientId });
+      } else {
+        roomInstance.send("player-win", { clientId });
+      }
     }
   }
 
@@ -347,11 +357,11 @@ class Scene extends Phaser.Scene {
       nextSound.play();
       this.inHoleSounds.push(nextSound);
       const number = Number(ball.name.split('-').shift());
-      // if(number === 8) {
-      //   if(typeof this.currentBallType!== 'undefined') {
-      //     this.checkWinCondition();
-      //   }
-      // }
+
+      if(number === 8) {
+        this.checkWinCondition();
+      }
+
       const ballType = getBallType(number);
       if(typeof this.currentBallType !== 'undefined' && ballType !== this.currentBallType) {
         this.setBallTypeFaul();
@@ -368,7 +378,6 @@ class Scene extends Phaser.Scene {
         this.stripedRemaining -= 1;
       }
       ball.setVelocity(0, 0);
-      // this.checkWinCondition();
     }
     if(ball.name === 'white' && ball.data.get('localPlayer')) {
       // this.whiteballFaul = true;
@@ -445,7 +454,10 @@ class Scene extends Phaser.Scene {
       ballTypeFaul: this.ballTypeFaul,
       roundInProgress: this.roundInProgress,
       currentBallType: this.currentBallType,
-      hasRoundColision: this.hasRoundColision
+      hasRoundColision: this.hasRoundColision,
+      fullRemaing: this.fullRemaining,
+      stripedRemaining: this.stripedRemaining,
+      lastBlackTouched: this.lastBlackTouched
     }, null, 2));
 
     this.manageSyncServer();
@@ -483,7 +495,7 @@ const config = {
 
 let game;
 
-const client = new Client("ws://25.48.31.195:2567");
+client = new Client("ws://25.48.31.195:2567");
 
 function onLeave(code) {
   console.log("You've been disconnected.", code);
@@ -511,6 +523,16 @@ function ballsSyncMessage(data) {
   ballsSync(data);
 }
 
+function gameEnded(data) {
+  if(data.id === clientId) {
+    setElementProperty('game-status', 'textContent', `YOU WON!!!`);
+  } else {
+    setElementProperty('game-status', 'textContent', `YOU LOST!!!`);
+  }
+
+  game?.destroy(true, false);
+}
+
 function connectById (id) {
   return client.joinById(id).then(room => {
     if(game) { game.destroy(true, false);}
@@ -523,6 +545,7 @@ function connectById (id) {
     room.onMessage('reset-white',ballReset);
     room.onMessage('end-round', endRoundMessage);
     room.onMessage('balls-sync', ballsSyncMessage);
+    room.onMessage('game-ended', gameEnded);
     room.onLeave(onLeave);
     console.log('Oponent connected', clientId);
     document.getElementById("hidden-form").hidden = true;
@@ -552,6 +575,8 @@ function createRoom () {
     room.onMessage('reset-white',ballReset);
     room.onMessage('end-round', endRoundMessage);
     room.onMessage('oponent-joined', oponentJoined);
+    room.onMessage('balls-sync', () => null);
+    room.onMessage('game-ended', gameEnded);
     console.log('You have created a room');
     document.getElementById('error').hidden = true;
     document.getElementById("hidden-form").hidden = true;

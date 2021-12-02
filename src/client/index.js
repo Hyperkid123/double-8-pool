@@ -53,6 +53,22 @@ class Scene extends Phaser.Scene {
     [...new Array(15)].forEach((_, index) => {
       this.load.spritesheet(`${index + 1}ball`, `assets/${index + 1}.png`, {frameWidth: 69, frameHeight: 68});
     });
+
+    /**
+     * Load audio files
+     */
+    this.load.audio('background-noise', 'assets/sounds/background-noise.mp3');
+    this.load.audio('ball-in-hole', 'assets/sounds/ball-in-hole.mp3');
+    this.load.audio('ball-touch-sides', 'assets/sounds/ball-touch-sides.mp3');
+    this.load.audio('gasp', 'assets/sounds/gasp.mp3');
+    this.load.audio('high-clap', 'assets/sounds/high-clap.mp3');
+    this.load.audio('high-velocity-hit-2', 'assets/sounds/high-velocity-hit-2.mp3');
+    this.load.audio('high-velocity-hit', 'assets/sounds/high-velocity-hit.mp3');
+    this.load.audio('low-velocity-hit', 'assets/sounds/low-velocity-hit.mp3');
+    this.load.audio('mid-clap', 'assets/sounds/mid-clap.mp3');
+    this.load.audio('mid-velocity-hit', 'assets/sounds/mid-velocity-hit.mp3');
+    this.load.audio('stick-ball-hit', 'assets/sounds/stick-ball-hit.mp3');
+
   }
 
   createWhiteBall(x, y, index) {
@@ -195,6 +211,22 @@ class Scene extends Phaser.Scene {
         roomInstance.send("stroke", {angle: this.stick.angle, velocity: newVel});
       }
     });
+
+    this.sounds = {};
+    this.sounds.bgNoise = this.game.sound.add('background-noise');
+    this.sounds.ballInHole = this.game.sound.add('ball-in-hole');
+    this.sounds.ballTouchSides = this.game.sound.add('ball-touch-sides');
+    this.sounds.gasp = this.game.sound.add('gasp');
+    this.sounds.highClap = this.game.sound.add('high-clap');
+    this.sounds.highVH2 = this.game.sound.add('high-velocity-hit-2');
+    this.sounds.highVH = this.game.sound.add('high-velocity-hit');
+    this.sounds.lowVH = this.game.sound.add('low-velocity-hit');
+    this.sounds.midClap = this.game.sound.add('mid-clap');
+    this.sounds.midVH = this.game.sound.add('mid-velocity-hit');
+    this.sounds.stickBallHit = this.game.sound.add('stick-ball-hit');
+
+    this.sounds.bgNoise.loop = true;
+    this.sounds.bgNoise.play();
   }
 
   moveBall(data, index) {
@@ -212,11 +244,21 @@ class Scene extends Phaser.Scene {
   }
 
   resetWait() {
+    this.sounds.stickBallHit.play();
     this.waitingForOponentStroke = false;
   }
 
   ballCollistion(ballOne, ballTwo) {
     let scoreBall;
+    const maxVelocity = Math.max(Math.abs(ballOne.body.velocity.x), Math.abs(ballOne.body.velocity.y), Math.abs(ballTwo.body.velocity.x), Math.abs(ballTwo.body.velocity.y));
+    if(maxVelocity > 500) {
+      Math.random() * 10 > 5 ? this.sounds.highVH.play() : this.sounds.highVH2.play();
+    } else if (maxVelocity <= 500 && maxVelocity > 200) {
+      this.sounds.midVH.play();
+    } else {
+      this.sounds.lowVH.play();
+    }
+
     if(this.hasRoundColision && (ballOne.name !== 'white' || ballTwo !== 'white')) {
       /**
        * do not process score balls collision or subsequent white balls collisions
@@ -259,7 +301,9 @@ class Scene extends Phaser.Scene {
   }
 
   ballInHole(ball, hole) {
+    this.sounds.ballInHole.play();
     if(ball.name !== 'white') {
+      this.sounds.midClap.play()
       const number = Number(ball.name.split('-').shift());
       if(number === 8) {
         if(typeof this.currentBallType!== 'undefined') {
@@ -288,6 +332,7 @@ class Scene extends Phaser.Scene {
       // this.whiteballFaul = true;
       // setElementProperty('place-ball', 'hidden', undefined);
       // this.roundInProgress = false;
+      this.sounds.gasp.pla();
       roomInstance.send('reset-white', { ballIndex });
     }
   }

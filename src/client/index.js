@@ -437,6 +437,7 @@ const config = {
       }
     }
   },
+  parent: document.getElementById('game-container'),
   backgroundColor: '#FFFFFF',
   scene: [ Scene ]
 };

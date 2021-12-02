@@ -18,6 +18,7 @@ let oponentConnected = false;
 let resetBall;
 let endRound;
 let resetWait;
+let ballsSync;
 class Scene extends Phaser.Scene {
   constructor() {
     super();
@@ -35,6 +36,7 @@ class Scene extends Phaser.Scene {
     this.firstTouchType = undefined;
     this.hasRoundColision = false;
     this.waitingForOponentStroke = true;
+    this.updateCounter = 0;
 
     this.myBalls = ballIndex ? BALL_TYPES.STRIPPES : BALL_TYPES.FULL;
     setElementProperty('game-status', 'textContent', `You have: ${this.myBalls} balls.`);
@@ -99,6 +101,7 @@ class Scene extends Phaser.Scene {
     resetBall = this.resetBall.bind(this);
     endRound = this.endRound.bind(this);
     resetWait = this.resetWait.bind(this);
+    ballsSync = ballIndex === 0 ? () => {} : this.ballsSync.bind(this);
     this.graphics = this.add.graphics();
     const table = this.physics.add.sprite(1253/2, 652/2, 'table');
     table.refreshBody();
@@ -241,11 +244,13 @@ class Scene extends Phaser.Scene {
   endRound() {
     console.log('end round');
     this.roundInProgress = false;
+    this.manageSyncServer(true);
   }
 
   resetWait() {
     this.sounds.stickBallHit.play();
     this.waitingForOponentStroke = false;
+    this.manageSyncServer(true);
   }
 
   ballCollistion(ballOne, ballTwo) {
@@ -303,7 +308,7 @@ class Scene extends Phaser.Scene {
   ballInHole(ball, hole) {
     this.sounds.ballInHole.play();
     if(ball.name !== 'white') {
-      this.sounds.midClap.play()
+      this.sounds.midClap.play();
       const number = Number(ball.name.split('-').shift());
       if(number === 8) {
         if(typeof this.currentBallType!== 'undefined') {
@@ -360,6 +365,25 @@ class Scene extends Phaser.Scene {
 
   }
 
+  ballsSync(balls) {
+    balls.forEach(({ velocity, position, angle, rotation }, index) => {
+      this.balls[index].setVelocity(velocity.x, velocity.y);
+      this.balls[index].setPosition(position.x, position.y);
+      this.balls[index].setAngle(angle);
+      this.balls[index].setRotation(rotation);
+    });
+  }
+
+  manageSyncServer(force = false) {
+    if(force || this.updateCounter === 5) {
+      this.updateCounter = 0;
+      const ballsData = this.balls.map((ball) => ({name: ball.name, velocity: ball.body.velocity, position: ball.body.position, angle: ball.body.angle, rotation: ball.body.rotation}));
+      roomInstance.send('balls-sync', ballsData);
+    } else {
+      this.updateCounter += 1;
+    }
+  }
+
   update() {
     this.graphics.clear();
 
@@ -380,6 +404,9 @@ class Scene extends Phaser.Scene {
       currentBallType: this.currentBallType,
       hasRoundColision: this.hasRoundColision
     }, null, 2));
+    if(ballIndex === 0 && this.roundInProgress && !this.waitingForOponentStroke) {
+      this.manageSyncServer();
+    }
     if(this.roundInProgress) {
       this.stick.setAlpha(0);
       this.manageWhiteBallVelocity();
@@ -437,6 +464,10 @@ function endRoundMessage() {
   endRound();
 }
 
+function ballsSyncMessage(data) {
+  ballsSync(data);
+}
+
 function connectById (id) {
   return client.joinById(id).then(room => {
     roomInstance = room;
@@ -447,6 +478,7 @@ function connectById (id) {
     room.onMessage('turn-ended', turnEnded);
     room.onMessage('reset-white',ballReset);
     room.onMessage('end-round', endRoundMessage);
+    room.onMessage('balls-sync', ballsSyncMessage);
     room.onLeave(onLeave);
     console.log('Oponent connected', clientId);
     document.getElementById("hidden-form").hidden = true;

@@ -46,10 +46,14 @@ class MyRoom extends Room {
 
     this.onMessage('balls-stopped', client => {
       this.rooms[roomId].players[client.id].ballsStopped = true;
-      console.log('balls-stopped-signal')
+      console.log('balls-stopped-signal');
       if(this.mapEachPlayer((_, { ballsStopped }) => ballsStopped, roomId).every((bool) => bool)) {
         this.broadcast('end-round');
       }
+    });
+
+    this.onMessage('balls-sync', (_, balls ) => {
+      this.broadcast('balls-sync', balls);
     });
   }
 

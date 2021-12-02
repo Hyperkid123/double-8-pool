@@ -22,6 +22,7 @@ let ballsSync;
 class Scene extends Phaser.Scene {
   constructor() {
     super();
+    this.syncNumber = 0;
     this.graphics;
     this.mouseFollow;
     this.stick;
@@ -365,22 +366,29 @@ class Scene extends Phaser.Scene {
 
   }
 
-  ballsSync(balls) {
-    balls.forEach(({ velocity, position, angle, rotation }, index) => {
-      this.balls[index].setVelocity(velocity.x, velocity.y);
-      this.balls[index].setPosition(position.x, position.y);
-      this.balls[index].setAngle(angle);
-      this.balls[index].setRotation(rotation);
-    });
+  ballsSync({balls, syncNumber}) {
+    if(syncNumber > this.syncNumber) {
+      balls.forEach(({ velocity, position, angle, rotation }, index) => {
+        this.balls[index].setVelocity(velocity.x, velocity.y);
+        this.balls[index].setPosition(position.x, position.y);
+        this.balls[index].setAngle(angle);
+        this.balls[index].setRotation(rotation);
+        this.balls[index].setOrigin(0.5, 0.5);
+      });
+      this.syncNumber = syncNumber;
+    }
   }
 
   manageSyncServer(force = false) {
-    if(force || this.updateCounter === 5) {
-      this.updateCounter = 0;
-      const ballsData = this.balls.map((ball) => ({name: ball.name, velocity: ball.body.velocity, position: ball.body.position, angle: ball.body.angle, rotation: ball.body.rotation}));
-      roomInstance.send('balls-sync', ballsData);
-    } else {
-      this.updateCounter += 1;
+    if(ballIndex === 0) {
+      if(force || this.updateCounter >= 10) {
+        this.updateCounter = 0;
+        const ballsData = this.balls.map((ball) => ({name: ball.name, velocity: ball.body.velocity, newVelocity: ball.body.newVelocity, position: { x: ball.x, y: ball.y }, angle: ball.body.angle, rotation: ball.body.rotation}));
+        this.syncNumber += 1;
+        roomInstance.send('balls-sync', {syncNumber: this.syncNumber, balls: ballsData});
+      } else {
+        this.updateCounter += 1;
+      }
     }
   }
 
@@ -404,9 +412,9 @@ class Scene extends Phaser.Scene {
       currentBallType: this.currentBallType,
       hasRoundColision: this.hasRoundColision
     }, null, 2));
-    if(ballIndex === 0 && this.roundInProgress && !this.waitingForOponentStroke) {
-      this.manageSyncServer();
-    }
+
+    this.manageSyncServer();
+
     if(this.roundInProgress) {
       this.stick.setAlpha(0);
       this.manageWhiteBallVelocity();

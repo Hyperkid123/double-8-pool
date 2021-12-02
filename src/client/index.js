@@ -372,10 +372,10 @@ class Scene extends Phaser.Scene {
       ball.x = 1400;
       if(ballType === BALL_TYPES.FULL) {
         ball.y = 500;
-        this.fullRemaining -= 1;
+        this.stripedRemaining -= 1;
       } else {
         ball.y = 150;
-        this.stripedRemaining -= 1;
+        this.fullRemaining -= 1;
       }
       ball.setVelocity(0, 0);
     }

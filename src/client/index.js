@@ -71,6 +71,22 @@ class Scene extends Phaser.Scene {
     this.load.audio('mid-clap', 'assets/sounds/mid-clap.mp3');
     this.load.audio('mid-velocity-hit', 'assets/sounds/mid-velocity-hit.mp3');
     this.load.audio('stick-ball-hit', 'assets/sounds/stick-ball-hit.mp3');
+    this.load.audio('in-hole-eight', 'assets/sounds/in-hole-eight.mp3');
+    this.load.audio('in-hole-eleven', 'assets/sounds/in-hole-eleven.mp3');
+    this.load.audio('in-hole-five', 'assets/sounds/in-hole-five.mp3');
+    this.load.audio('in-hole-fiveteen', 'assets/sounds/in-hole-fiveteen.mp3');
+    this.load.audio('in-hole-four', 'assets/sounds/in-hole-four.mp3');
+    this.load.audio('in-hole-fourteen', 'assets/sounds/in-hole-fourteen.mp3');
+    this.load.audio('in-hole-nine', 'assets/sounds/in-hole-nine.mp3');
+    this.load.audio('in-hole-one', 'assets/sounds/in-hole-one.mp3');
+    this.load.audio('in-hole-seven', 'assets/sounds/in-hole-seven.mp3');
+    this.load.audio('in-hole-six', 'assets/sounds/in-hole-six.mp3');
+    this.load.audio('in-hole-ten', 'assets/sounds/in-hole-ten.mp3');
+    this.load.audio('in-hole-thirteen', 'assets/sounds/in-hole-thirteen.mp3');
+    this.load.audio('in-hole-three', 'assets/sounds/in-hole-three.mp3');
+    this.load.audio('in-hole-twelve', 'assets/sounds/in-hole-twelve.mp3');
+    this.load.audio('in-hole-two', 'assets/sounds/in-hole-two.mp3');
+
 
   }
 
@@ -227,6 +243,27 @@ class Scene extends Phaser.Scene {
     this.sounds.midVH = this.game.sound.add('mid-velocity-hit');
     this.sounds.stickBallHit = this.game.sound.add('stick-ball-hit');
 
+    this.inHoleSounds = [];
+    [
+      'in-hole-eight',
+      'in-hole-eleven',
+      'in-hole-five',
+      'in-hole-fiveteen',
+      'in-hole-four',
+      'in-hole-fourteen',
+      'in-hole-nine',
+      'in-hole-one',
+      'in-hole-seven',
+      'in-hole-six',
+      'in-hole-ten',
+      'in-hole-thirteen',
+      'in-hole-three',
+      'in-hole-twelve',
+      'in-hole-two',
+    ].sort(() => (Math.random() > .5) ? 1 : -1).forEach((name) => {
+      this.inHoleSounds.push(this.game.sound.add(name));
+    });
+
     this.sounds.bgNoise.loop = true;
     this.sounds.bgNoise.play();
   }
@@ -306,7 +343,9 @@ class Scene extends Phaser.Scene {
   ballInHole(ball, hole) {
     this.sounds.ballInHole.play();
     if(ball.name !== 'white') {
-      this.sounds.midClap.play();
+      const nextSound = this.inHoleSounds.shift();
+      nextSound.play();
+      this.inHoleSounds.push(nextSound);
       const number = Number(ball.name.split('-').shift());
       // if(number === 8) {
       //   if(typeof this.currentBallType!== 'undefined') {

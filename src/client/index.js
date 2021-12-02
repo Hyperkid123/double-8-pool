@@ -308,11 +308,11 @@ class Scene extends Phaser.Scene {
     if(ball.name !== 'white') {
       this.sounds.midClap.play();
       const number = Number(ball.name.split('-').shift());
-      if(number === 8) {
-        if(typeof this.currentBallType!== 'undefined') {
-          this.checkWinCondition();
-        }
-      }
+      // if(number === 8) {
+      //   if(typeof this.currentBallType!== 'undefined') {
+      //     this.checkWinCondition();
+      //   }
+      // }
       const ballType = getBallType(number);
       if(typeof this.currentBallType !== 'undefined' && ballType !== this.currentBallType) {
         this.setBallTypeFaul();
@@ -329,13 +329,13 @@ class Scene extends Phaser.Scene {
         this.stripedRemaining -= 1;
       }
       ball.setVelocity(0, 0);
-      this.checkWinCondition();
+      // this.checkWinCondition();
     }
     if(ball.name === 'white' && ball.data.get('localPlayer')) {
       // this.whiteballFaul = true;
       // setElementProperty('place-ball', 'hidden', undefined);
       // this.roundInProgress = false;
-      this.sounds.gasp.pla();
+      this.sounds.gasp.play();
       roomInstance.send('reset-white', { ballIndex });
     }
   }
@@ -444,7 +444,7 @@ const config = {
 
 let game;
 
-const client = new Client("ws://localhost:2567");
+const client = new Client("ws://25.48.31.195:2567");
 
 function onLeave(code) {
   console.log("You've been disconnected.", code);
